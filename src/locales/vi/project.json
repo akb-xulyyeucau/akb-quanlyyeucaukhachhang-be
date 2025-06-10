@@ -1,0 +1,18 @@
+{
+  "notFound": "Không tìm thấy dự án nào",
+  "create": {
+    "success": "Tạo mới dự án thành công",
+    "error": "Lỗi khi tạo mới dự án"
+  },
+  "getAll": {
+    "success": "Lấy danh sách dự án thành công"
+  },
+  "update": {
+    "success": "Cập nhật thành công",
+    "error": "Cập nhật dự án thất bại"
+  },
+  "delete": {
+    "success": "Xóa dự án thành công",
+    "error": "Xóa dự án thất bại"
+  }
+}

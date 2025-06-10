@@ -1,0 +1,39 @@
+{
+  "notFound": "ユーザーが見つかりません",
+  "alreadyExists": "ユーザーは既に存在します",
+  "createFailed": "ユーザーを作成できません",
+  "serverError": "サーバーエラー：{{message}}",
+  "updateStatus": {
+    "success": "ユーザーステータスを{{status}}に更新しました",
+    "active": "アクティブ",
+    "inactive": "非アクティブ"
+  },
+  "updateStatusError": "ステータス更新エラー：{{message}}",
+  "getAll": {
+    "success": "ユーザー一覧を取得しました",
+    "error": "ユーザー一覧の取得に失敗しました：{{message}}"
+  },
+  "create": {
+    "success": "ユーザーを作成しました",
+    "error": "ユーザーの作成に失敗しました：{{message}}",
+    "exists": "ユーザーは既に存在します"
+  },
+  "update": {
+    "success": "ユーザーを更新しました",
+    "error": "ユーザーの更新に失敗しました：{{message}}"
+  },
+  "delete": {
+    "success": "ユーザーを削除しました",
+    "error": "ユーザーの削除に失敗しました：{{message}}"
+  },
+  "getUser": {
+    "success": "ユーザーを取得しました",
+    "error": "ユーザーの取得に失敗しました：{{message}}"
+  },
+  "updateActive": {
+    "success": "ユーザーのアクティブ状態を更新しました",
+    "error": "ユーザーのアクティブ状態の更新に失敗しました：{{message}}"
+  }
+
+
+}

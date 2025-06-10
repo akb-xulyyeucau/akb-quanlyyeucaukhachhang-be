@@ -1,0 +1,37 @@
+{
+  "notFound": "Không tìm thấy user",
+  "alreadyExists": "User đã tồn tại",
+  "createFailed": "Không tạo được user",
+  "serverError": "Lỗi server: {{message}}",
+  "updateStatus": {
+    "success": "Cập nhật trạng thái người dùng thành {{status}}",
+    "active": "hoạt động",
+    "inactive": "không hoạt động"
+  },
+  "updateStatusError": "Lỗi khi cập nhật trạng thái: {{message}}",
+  "getAll": {
+    "success": "Lấy danh sách user thành công",
+    "error": "Lỗi khi lấy danh sách user: {{message}}"
+  },
+  "create": {
+    "success": "Tạo user thành công",
+    "error": "Lỗi khi tạo user: {{message}}",
+    "exists": "User đã tồn tại"
+  },
+  "update": {
+    "success": "Cập nhật user thành công",
+    "error": "Lỗi khi cập nhật user: {{message}}"
+  },
+  "delete": {
+    "success": "Xóa user thành công",
+    "error": "Lỗi khi xóa user: {{message}}"
+  },
+  "getUser": {
+    "success": "Lấy user thành công",
+    "error": "Lỗi khi lấy user: {{message}}"
+  },
+  "updateActive": {
+    "success": "Cập nhật trạng thái user thành công",
+    "error": "Lỗi khi cập nhật trạng thái user: {{message}}"
+  }
+}

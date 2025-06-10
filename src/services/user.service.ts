@@ -1,0 +1,117 @@
+import User from "../models/user.model";
+import { IUser } from '../interfaces/user.interface';
+import { genAlias  } from "../utils/alias.util";
+
+// lấy tất cả user
+export const getAllUser = async () => {
+    const users = await User.find();
+    if(!users) {
+        throw new Error('User not found');
+    }
+    return users;
+}
+
+// lấy user theo id
+export const getUserById = async (id: string) => {
+    const user = await User.findById(id);
+    if(!user) {
+        throw new Error('User not found');
+    }
+    return user;
+}
+
+// tạo user
+export const createUser = async (userData: IUser) => {
+    const existUser = await User.findOne({email: userData.email})
+    if (!userData.alias || userData.alias === '') {
+        const count = await User.countDocuments();
+        const allUsers = await User.find({}, 'alias');
+        const existingAliases = allUsers.map(u => u.alias)
+        userData.alias = genAlias('user', existingAliases);
+    }
+    if(existUser) {
+        throw new Error('User already exists');
+    }
+    const user = await User.create(userData);
+    if(!user) {
+        throw new Error('Failed to create user');
+    }
+    return user;
+}
+
+// update user theo id
+export const updateUserById = async (id: string, userData: IUser) => {
+   try {
+    const user = await User.findByIdAndUpdate(id, userData, {new: true});
+    if(!user) {
+        throw new Error('User not found');
+    }
+    return user;
+   } catch (error: any) {
+    throw new Error(`Server error: ${error.message}`);
+   }
+}
+
+// xóa user theo id
+export const deleteUserById = async (id: string) => {
+    const user = await User.findByIdAndDelete(id);
+    if(!user) {
+        throw new Error('User not found');
+    }
+    return user;
+}
+
+// Lấy user với phân trang, tìm kiếm và sắp xếp
+export const getUser = async ({limit = 10, page = 1, search = '', role = '', sort = 'asc', isActive = ''}) => {
+    try {
+        const skip = (page - 1) * limit;
+        let searchQuery: any = search ? { alias: { $regex: search, $options: 'i' } } : {};
+        
+        if (role) {
+            searchQuery.role = role;
+        }
+        if (isActive !== '') {
+            const isActiveBool = isActive.toLowerCase() === 'true';
+            searchQuery.isActive = isActiveBool;
+        }
+        const total = await User.countDocuments(searchQuery);
+        let users = await User.find(searchQuery).select('-password');        
+        users = users.sort((a, b) => {
+            const numA = parseInt(a.alias.replace(/[^0-9]/g, ''));
+            const numB = parseInt(b.alias.replace(/[^0-9]/g, ''));
+            return sort === 'asc' ? numA - numB : numB - numA;
+        });
+        users = users.slice(skip, skip + limit);
+        return {
+            users,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        };
+    } catch (error: any) {
+        throw new Error(`Server error: ${error.message}`);
+    }
+}
+
+// Cập nhật trạng thái isActive của user
+export const updateUserActive = async (userId: string, isActive: boolean) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { isActive },
+            { new: true }
+        );
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return {
+            success: true,
+            data: user
+        };
+    } catch (error: any) {
+        throw new Error(`Failed to update user status: ${error.message}`);
+    }
+}
