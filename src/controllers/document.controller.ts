@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { uploadDocument , deleteDocument } from '../services/document.service';
+import { uploadDocument, deleteDocument, updateTrashStatus } from '../services/document.service';
 import { IFile } from '../interfaces/document.interface';
 
 export const uploadDocumentController = async (req: Request, res: Response) => {
@@ -19,11 +19,29 @@ export const uploadDocumentController = async (req: Request, res: Response) => {
       day,
       sender,
       files: fileInfos,
+      isTrash: true
     });
     res.status(201).json({
       success: true,
       message: "Upload tài liệu thành công",
       data: newDoc,
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateTrashStatusController = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.params;
+    const updatedDoc = await updateTrashStatus(documentId);
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật trạng thái thành công",
+      data: updatedDoc,
     });
   } catch (error: any) {
     res.status(400).json({

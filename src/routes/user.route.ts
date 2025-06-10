@@ -7,7 +7,8 @@ import {
     deleteUserByIdController, 
     udateUserByIdController,
     getUserController,
-    updateUserActiveController
+    updateUserActiveController,
+    meController
 } from '../controllers/user.controller';
 import { protect, authorize } from '../middlewares/auth.middleware';
 
@@ -20,5 +21,6 @@ router.get('/:id', protect, authorize('admin'), expressAsyncHandler(getUserByIdC
 router.put('/:id', protect, authorize('admin'), expressAsyncHandler(udateUserByIdController));
 router.delete('/:id', protect, authorize('admin'), expressAsyncHandler(deleteUserByIdController));
 router.patch('/active/:userId', protect, authorize('admin'), expressAsyncHandler(updateUserActiveController));
+router.get('/me/:userId', protect, expressAsyncHandler(meController));
 
 export default router;

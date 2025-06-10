@@ -5,7 +5,8 @@ import {
     deleteUserById , 
     getAllUser , 
     getUser,
-    updateUserActive
+    updateUserActive,
+    me
 } from "../services/user.service";
 import { Request, Response } from "express";
 import { IUser } from "../interfaces/user.interface";
@@ -215,6 +216,23 @@ export const updateUserActiveController = async (req: Request, res: Response) =>
         res.status(400).json({
             success: false,
             message: req.t('updateStatus.error', { ns: 'user', error: error.message })
+        });
+    }
+}
+
+export const meController = async (req: Request, res: Response) => {
+    try {
+        const {userId} = req.params;
+        const userProfile = await me(userId);
+        res.status(200).json({
+            success: true,
+            message: req.t('me.success', { ns: 'user' }),
+            data: userProfile
+        })
+    } catch (error: any) {
+        res.status(400).json({
+            success: false,
+            message: req.t('me.error', { ns: 'user', error: error.message })
         });
     }
 }

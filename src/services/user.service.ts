@@ -1,6 +1,8 @@
 import User from "../models/user.model";
 import { IUser } from '../interfaces/user.interface';
 import { genAlias  } from "../utils/alias.util";
+import Customer from "../models/customer.model";
+import PM from "../models/pm.model";
 
 // lấy tất cả user
 export const getAllUser = async () => {
@@ -114,4 +116,22 @@ export const updateUserActive = async (userId: string, isActive: boolean) => {
     } catch (error: any) {
         throw new Error(`Failed to update user status: ${error.message}`);
     }
+}
+export const me = async (userId : string) => {
+    const user : IUser | null = await User.findById(userId).select('-password');
+    if(!user) throw new Error('User not found');
+    if(user.role === 'guest') {
+        const profile = await Customer.findOne({userId: userId});
+        if(!profile) throw new Error('Customer not found');
+        return {user , profile};
+    }
+    if(user.role === 'pm') {
+        const profile = await PM.findOne({userId: userId});
+        if(!profile) throw new Error('PM not found');
+        return {user , profile};
+    }
+    if(user.role === 'admin') {
+        return user;
+    }
+    throw new Error('User not found');
 }

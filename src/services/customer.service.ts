@@ -123,3 +123,7 @@ export const getCustomerPagniton = async (req: Request, {
     throw new Error(req.t('serverError', { ns: 'customer', message: error.message }));
   }
 }
+
+export const getCustomerSelectOption = async (req : Request , {}) => {
+    const customers = await Customer
+}
