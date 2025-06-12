@@ -5,7 +5,8 @@ import {
     getPMByUserId, 
     updatePMById, 
     deletePMById,
-    deletePMByUserId
+    deletePMByUserId,
+    autoSearchPMs
 } from "../services/pm.service";
 import { IPM } from "../interfaces/pm.interface";
 
@@ -124,5 +125,22 @@ export const deletePMByUserIdController = async (req: Request, res: Response) =>
             success: false,
             message: error.message
         });
+    }
+}
+
+export const autoSearchPMsController = async (req : Request , res : Response) => {
+    try {
+        const {searchTerm} = req.query;
+        const pms = await autoSearchPMs(req , String(searchTerm));
+        res.status(200).json({
+            success : true,
+            message : req.t('autoSearch.success', { ns: 'pm' }),
+            data : pms
+        })
+    } catch ( error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
     }
 }

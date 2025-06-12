@@ -21,6 +21,6 @@ router.get('/:id', protect, authorize('admin'), expressAsyncHandler(getUserByIdC
 router.put('/:id', protect, authorize('admin'), expressAsyncHandler(udateUserByIdController));
 router.delete('/:id', protect, authorize('admin'), expressAsyncHandler(deleteUserByIdController));
 router.patch('/active/:userId', protect, authorize('admin'), expressAsyncHandler(updateUserActiveController));
-router.get('/me/:userId', protect, expressAsyncHandler(meController));
+router.get('/me/:userId', expressAsyncHandler(meController));
 
 export default router;

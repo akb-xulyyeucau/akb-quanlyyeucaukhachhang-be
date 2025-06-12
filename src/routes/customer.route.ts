@@ -8,13 +8,15 @@ import {
     updateCustomerByIdController , 
     deleteCustomerByIdController,
     deleteCustomerByUserIdController,
-    getCustomerPagnitonController
+    getCustomerPagnitonController,
+    autoSearchCustomersController
 } from '../controllers/customer.controller';
 const router = express.Router();
 
 router.use(protect);
 router.post('/', authorize('admin'), expressAsyncHandler(createCustomerCotroller));
 router.get('/', authorize('admin'), expressAsyncHandler(getAllCustomerController));
+router.get('/auto-search' , protect, expressAsyncHandler(autoSearchCustomersController));
 router.get('/search', authorize('admin' ), expressAsyncHandler(getCustomerPagnitonController));
 router.get('/:userId', authorize('admin'), expressAsyncHandler(getCustomerByUserIdController));
 router.put('/:id' , authorize('admin'), expressAsyncHandler(updateCustomerByIdController));

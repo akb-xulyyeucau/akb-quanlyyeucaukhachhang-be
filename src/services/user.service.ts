@@ -131,7 +131,7 @@ export const me = async (userId : string) => {
         return {user , profile};
     }
     if(user.role === 'admin') {
-        return user;
+        return {user , profile: null};
     }
     throw new Error('User not found');
 }

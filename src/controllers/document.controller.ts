@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { uploadDocument, deleteDocument, updateTrashStatus } from '../services/document.service';
+import { uploadDocument, deleteDocument, updateTrashStatus, getDocumentById } from '../services/document.service';
 import { IFile } from '../interfaces/document.interface';
 
 export const uploadDocumentController = async (req: Request, res: Response) => {
@@ -33,6 +33,23 @@ export const uploadDocumentController = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getDocumentByIdController = async (req : Request , res : Response) => {
+  try {
+    const {documentId} = req.params;
+    const documents = await getDocumentById(documentId);
+    res.status(200).json({
+      success : true,
+      message : "Lấy tài liệu thành công",
+      data : documents
+    })
+  } catch ( error : any) {
+    res.status(400).json({
+      success : false,
+      message : error.message
+    })
+  }
+}
 
 export const updateTrashStatusController = async (req: Request, res: Response) => {
   try {

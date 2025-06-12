@@ -5,16 +5,18 @@ import {
  createProjectController,
  updateProjectByIdController,
  deleteProjectByIdController,
- getProjectRequestController
+ getProjectRequestController,
+ getProjectByIdController
 } from '../controllers/project.controller';
 import {  protect, authorize } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 router.use(protect);
-router.use(authorize('admin' , 'pm'));
+router.use(authorize('admin' , 'pm' , 'guest'));
 
 router.get('/' , expressAsyncHandler(getAllProjectController));
 router.get('/request', expressAsyncHandler(getProjectRequestController));
+router.get('/:pId', expressAsyncHandler(getProjectByIdController));
 router.post('/', expressAsyncHandler(createProjectController));
 router.put('/:pId' , expressAsyncHandler(updateProjectByIdController));
 router.delete('/:pId' , expressAsyncHandler(deleteProjectByIdController));

@@ -17,13 +17,24 @@ export const uploadDocument = async (docData: IDocument) => {
   return newDoc;
 };
 
+export const getDocumentById = async (documentId : string) => {
+  const doc = await Document.findById(documentId);
+  if(!doc) throw new Error("Không tìm thấy tài liệu");
+  return doc;
+}
+
 export const updateTrashStatus = async (documentId: string) => {
+  // Đầu tiên tìm document để lấy trạng thái hiện tại
+  const currentDoc = await Document.findById(documentId);
+  if (!currentDoc) throw new Error("Không tìm thấy tài liệu");
+
+  // Cập nhật với trạng thái ngược lại
   const doc = await Document.findByIdAndUpdate(
     documentId,
-    { isTrash: true },
+    { isTrash: !currentDoc.isTrash },
     { new: true }
   );
-  if (!doc) throw new Error("Không tìm thấy tài liệu");
+  
   return doc;
 };
 
@@ -32,4 +43,6 @@ export const deleteDocument = async (documentId : string) => {
     if(!doc) throw new Error("Không xóa được tài liệu");
     return doc;
 }
+
+
  

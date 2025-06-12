@@ -1,5 +1,6 @@
 import { IProject } from '../interfaces/project.interface';
 import Project from '../models/project.model';
+import Document from '../models/document.model';
 import { genAlias } from '../utils/alias.util';
 import { Request } from 'express';
 
@@ -37,6 +38,30 @@ export const getProjectRequest = async (req : Request , isActive : Boolean) => {
     return projectRequest;
 }
 
+export const getProjectById = async (req: Request, pId: string) => {
+    // Tìm project và populate các trường cần thiết
+    const project = await Project.findById(pId)
+        .populate({
+            path: 'pm',
+            select: 'name emailContact'
+        })
+        .populate({
+            path: 'customer',
+            select: 'name emailContact'
+        })
+        .populate({
+            path: 'documentIds',
+            model: 'Document',
+            populate: {
+                path: 'sender',
+                select: 'name emailContact'
+            }
+        });
+
+    if(!project) throw new Error(req.t('notFound', { ns: 'project' }));
+    return project;
+}
+
 export const createProject = async (req: Request, projectData: IProject) => {
     const allProjects = await Project.find();
     const existingAliases = allProjects.map(item => item.alias);
@@ -57,9 +82,21 @@ export const updateProjectById = async (req: Request, pId: string, projectData: 
 }
 
 export const deleteProjectById = async (req: Request, pId: string) => {
-    const deletedProject = await Project.findByIdAndDelete(pId);
-    if(!deletedProject){
+    // Tìm project trước khi xóa để lấy documentIds
+    const project = await Project.findById(pId);
+    if(!project) {
         throw new Error(req.t('delete.error', { ns: 'project' }));
-    } 
+    }
+
+    // Cập nhật trạng thái isTrash của tất cả documents liên quan
+    if(project.documentIds && project.documentIds.length > 0) {
+        await Document.updateMany(
+            { _id: { $in: project.documentIds } },
+            { isTrash: true }
+        );
+    }
+
+    // Xóa project
+    const deletedProject = await Project.findByIdAndDelete(pId);
     return deletedProject;
 }

@@ -4,23 +4,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Thời gian hết hạn cho dự án chưa kích hoạt (mặc định 1 ngày)
 const PENDING_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_PROJECT_EXPIRED_DAYS || '1');
-// Thời gian hết hạn cho dự án đã hoàn thành (mặc định 30 ngày)
 const COMPLETED_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_COMPLETED_PROJECT_EXPIRED_DAYS || '3');
 
 const cleanProjects = async () => {
     try {
         const pendingExpiredTime = new Date(Date.now() - PENDING_EXPIRED_DAYS * 24 * 60 * 60 * 1000);
         const completedExpiredTime = new Date(Date.now() - COMPLETED_EXPIRED_DAYS * 24 * 60 * 60 * 1000);
-
-        // Xóa dự án chưa kích hoạt
         const pendingProjects = await Project.deleteMany({
             status: "Chưa kích hoạt",
             createdAt: { $lt: pendingExpiredTime }
         });
-
-        // Xóa dự án đã hoàn thành
         const completedProjects = await Project.deleteMany({
             status: "Đã hoàn thành",
             createdAt: { $lt: completedExpiredTime }

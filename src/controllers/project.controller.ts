@@ -3,7 +3,8 @@ import {
     getProjectRequest,
     createProject,  
     updateProjectById,
-    deleteProjectById
+    deleteProjectById,
+    getProjectById
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
@@ -67,6 +68,23 @@ export const getProjectRequestController = async (req : Request , res : Response
             success : false,
             message : error.message
         })
+    }
+}
+
+export const getProjectByIdController = async (req : Request , res : Response) => {
+    try {
+        const {pId} = req.params;
+        const project = await getProjectById(req , pId);
+        res.status(200).json({
+            success : true,
+            message : req.t('getById.success', { ns: 'project' }),
+            data : project
+        });
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        });
     }
 }
 
