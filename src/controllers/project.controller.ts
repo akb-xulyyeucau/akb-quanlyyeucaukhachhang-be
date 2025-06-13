@@ -4,7 +4,8 @@ import {
     createProject,  
     updateProjectById,
     deleteProjectById,
-    getProjectById
+    getProjectById,
+    activeProject
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
@@ -124,6 +125,27 @@ export const deleteProjectByIdController = async (req : Request , res : Response
             success : true,
             message : req.t('delete.success', { ns: 'project' }),
             data : result
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const activeProjectController = async (req : Request , res : Response) => {
+    try {
+        const {pId} = req.params;
+        const data = {
+            status : "Đang thực hiện",
+            isActive : true
+        }
+        const activeProjects = await activeProject(req , pId , data);
+        res.status(200).json({
+            success : true,
+            message : req.t('active.success', { ns: 'project' }),
+            data : activeProjects
         })
     } catch (error : any) {
         res.status(400).json({

@@ -6,7 +6,8 @@ import {
  updateProjectByIdController,
  deleteProjectByIdController,
  getProjectRequestController,
- getProjectByIdController
+ getProjectByIdController,
+ activeProjectController
 } from '../controllers/project.controller';
 import {  protect, authorize } from '../middlewares/auth.middleware';
 
@@ -18,6 +19,7 @@ router.get('/' , expressAsyncHandler(getAllProjectController));
 router.get('/request', expressAsyncHandler(getProjectRequestController));
 router.get('/:pId', expressAsyncHandler(getProjectByIdController));
 router.post('/', expressAsyncHandler(createProjectController));
+router.patch('/active/:pId' , expressAsyncHandler(activeProjectController));
 router.put('/:pId' , expressAsyncHandler(updateProjectByIdController));
 router.delete('/:pId' , expressAsyncHandler(deleteProjectByIdController));
 

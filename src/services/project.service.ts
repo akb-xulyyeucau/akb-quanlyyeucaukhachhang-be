@@ -100,3 +100,11 @@ export const deleteProjectById = async (req: Request, pId: string) => {
     const deletedProject = await Project.findByIdAndDelete(pId);
     return deletedProject;
 }
+
+export const activeProject = async (req : Request , pId : string , data : {status : string , isActive : boolean}) => {
+    const project = await Project.findByIdAndUpdate(pId , data , {new : true});
+    if(!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+    return project;
+}
