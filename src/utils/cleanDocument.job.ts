@@ -4,7 +4,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
-const expiredTime = new Date(Date.now() - parseInt(process.env.CRON_JOB_DOCUMENT_EXPIRED_TIME || '30') * 60 * 1000);
+const expiredTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // 1 day in milliseconds
 const uploadDir = path.join(__dirname, "..", "uploads");
 
 const cleanDocumentJob = async () => {
@@ -31,5 +31,5 @@ const cleanDocumentJob = async () => {
 }
 
 export const cronJobCleanDocument = () => {
-    cron.schedule(`*/${process.env.CRON_JOB_DOCUMENT_EXPIRED_TIME} * * * * *`, cleanDocumentJob);
+    cron.schedule('0 0 * * *', cleanDocumentJob); // Run at 00:00 every day
 }

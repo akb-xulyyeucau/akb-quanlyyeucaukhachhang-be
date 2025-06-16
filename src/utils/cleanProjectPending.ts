@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const PENDING_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_PROJECT_EXPIRED_DAYS || '1');
-const COMPLETED_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_COMPLETED_PROJECT_EXPIRED_DAYS || '3');
+const PENDING_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_PROJECT_EXPIRED_DAYS || '7');
+const COMPLETED_EXPIRED_DAYS = parseInt(process.env.CRON_JOB_COMPLETED_PROJECT_EXPIRED_DAYS || '14');
 
 const cleanProjects = async () => {
     try {
