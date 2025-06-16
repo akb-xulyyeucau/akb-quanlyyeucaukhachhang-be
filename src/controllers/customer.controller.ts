@@ -5,7 +5,8 @@ import {
     updateCustomerById , 
     deleteCustomerById,
     deleteCustomerByUserId,
-    getCustomerPagniton
+    getCustomerPagniton,
+    autoSearchCustomers
  } from '../services/customer.service';
 import { Request, Response } from 'express';
 import {ICustomer} from  "../interfaces/customer.interface";
@@ -156,3 +157,20 @@ export const getCustomerPagnitonController = async (req: Request, res: Response)
         });
     }
 };
+
+export const autoSearchCustomersController = async (req : Request , res : Response) => {
+    try {
+        const {searchTerm} = req.query;
+        const customers = await autoSearchCustomers(req , String(searchTerm));
+        res.status(200).json({
+            success : true,
+            message : req.t('autoSearch.success', { ns: 'customer' }),
+            data : customers
+        })
+    } catch ( error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}

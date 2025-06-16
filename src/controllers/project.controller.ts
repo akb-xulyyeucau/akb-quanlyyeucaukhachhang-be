@@ -3,7 +3,11 @@ import {
     getProjectRequest,
     createProject,  
     updateProjectById,
-    deleteProjectById
+    deleteProjectById,
+    getProjectById,
+    activeProject,
+    getProjectByCustomerId,
+    getProjectRequestByCustomerId
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
@@ -70,6 +74,23 @@ export const getProjectRequestController = async (req : Request , res : Response
     }
 }
 
+export const getProjectByIdController = async (req : Request , res : Response) => {
+    try {
+        const {pId} = req.params;
+        const project = await getProjectById(req , pId);
+        res.status(200).json({
+            success : true,
+            message : req.t('getById.success', { ns: 'project' }),
+            data : project
+        });
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        });
+    }
+}
+
 export const updateProjectByIdController = async (req : Request , res : Response)=>{
     try {
         const {pId} = req.params;
@@ -106,6 +127,61 @@ export const deleteProjectByIdController = async (req : Request , res : Response
             success : true,
             message : req.t('delete.success', { ns: 'project' }),
             data : result
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const activeProjectController = async (req : Request , res : Response) => {
+    try {
+        const {pId} = req.params;
+        const data = {
+            status : "Đang thực hiện",
+            isActive : true
+        }
+        const activeProjects = await activeProject(req , pId , data);
+        res.status(200).json({
+            success : true,
+            message : req.t('active.success', { ns: 'project' }),
+            data : activeProjects
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const getProjectByCustomerIdController = async (req : Request , res : Response) => {
+    try {
+        const {cId} = req.params;
+        const project = await getProjectByCustomerId(req , cId);
+        res.status(200).json({
+            success : true,
+            message : req.t('getByCustomerId.success', { ns: 'project' }),
+            data : project
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const getProjectRequestByCustomerIdController = async (req : Request , res : Response) => {
+    try {
+        const {cId} = req.params;
+        const project = await getProjectRequestByCustomerId(req , cId);
+        res.status(200).json({
+            success : true,
+            message : req.t('getByCustomerId.success', { ns: 'project' }),
+            data : project
         })
     } catch (error : any) {
         res.status(400).json({

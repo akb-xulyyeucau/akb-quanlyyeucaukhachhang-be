@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import {corsOptions} from './configs/corsOptions.config';
+import {cronJob} from './configs/cronjob';
 import cookieParser from "cookie-parser";
 import connectDB from './configs/db.config';
 import i18next from './configs/i18n.config';
@@ -37,6 +38,7 @@ app.use("/api/:lng/pm", pmRoutes);
 app.use("/api/:lng/project" , projectRoute);
 app.use("/api/:lng/document", documentRoute);
 connectDB();
+cronJob();
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

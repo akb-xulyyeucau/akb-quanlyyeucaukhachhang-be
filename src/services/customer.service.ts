@@ -123,3 +123,65 @@ export const getCustomerPagniton = async (req: Request, {
     throw new Error(req.t('serverError', { ns: 'customer', message: error.message }));
   }
 }
+
+export const autoSearchCustomers = async(req: Request, searchTerm: string = "") => {
+    try {
+        let query = {};
+        if(searchTerm) {
+            const searchPattern = searchTerm
+                .toLowerCase()
+                .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+                .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
+                .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+                .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
+                .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+                .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+                .replace(/đ/g, "d");
+
+            query = {
+                $or: [
+                    { 
+                        name: { 
+                            $regex: searchTerm, 
+                            $options: 'i' 
+                        } 
+                    },
+                    { 
+                        alias: { 
+                            $regex: searchTerm, 
+                            $options: 'i' 
+                        } 
+                    },
+                    {
+                        $expr: {
+                            $regexMatch: {
+                                input: {
+                                    $replaceAll: {
+                                        input: { $toLower: "$name" },
+                                        find: "à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ",
+                                        replacement: "a"
+                                    }
+                                },
+                                regex: searchPattern,
+                                options: "i"
+                            }
+                        }
+                    }
+                ]
+            };
+        }
+
+        const customers = await Customer.find(query)
+            .select("name alias emailContact phoneContact")
+            .limit(10)
+            .sort({ name: 1 });
+
+        if(!customers || customers.length === 0) {
+            return [];
+        }
+
+        return customers;
+    } catch (error: any) {
+        throw new Error(req.t('serverError', { ns: 'customer', message: error.message }));
+    }
+}

@@ -1,7 +1,9 @@
-import { IProject } from '../interfaces/project.interface';
+import { IProject , IUserSender , IDocumentPopulated , IProjectPopulated } from '../interfaces/project.interface';
 import Project from '../models/project.model';
+import Document from '../models/document.model';
 import { genAlias } from '../utils/alias.util';
 import { Request } from 'express';
+import mongoose from 'mongoose';
 
 export const getAllProject = async (req: Request) => {
     const project = await Project.find({isActive : true})
@@ -24,11 +26,11 @@ export const getProjectRequest = async (req : Request , isActive : Boolean) => {
     const projectRequest = await Project.find({isActive : isActive})
     .populate({
         path : 'pm',
-        select: 'name emailContact'
+        select: 'name emailContact '
     })
     .populate({
         path : 'customer',
-        select: 'name emailContact'
+        select: 'name emailContact '
     });
 
     if(!projectRequest) {
@@ -36,6 +38,56 @@ export const getProjectRequest = async (req : Request , isActive : Boolean) => {
     }
     return projectRequest;
 }
+
+
+export const getProjectById = async (req: Request, pId: string) => {
+    const project = await Project.findById(pId)
+        .populate({
+            path: 'pm',
+            select: 'name emailContact phoneContact'
+        })                  
+        .populate({
+            path: 'customer',
+            select: 'name emailContact phoneContact' 
+        })
+        .populate({
+            path: 'documentIds',
+            populate: {
+                path: 'sender',
+                select: 'email alias role name',
+                model: 'User'
+            },
+        }) as unknown as IProjectPopulated;
+
+    if (!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+
+    // Add name to sender based on role
+    if (project.documentIds?.length > 0) {
+        for (const doc of project.documentIds as IDocumentPopulated[]) {
+            if (doc.sender) {
+                const sender = doc.sender as IUserSender;
+                if (!sender.name) {
+                    if (sender.role === 'pm') {
+                        const pmInfo = await mongoose.model('PM').findOne({ userId: sender._id }).select('name');
+                        if (pmInfo && 'name' in pmInfo) {
+                            sender.name = pmInfo.name;
+                        }
+                    } else if (sender.role === 'guest') {
+                        const customerInfo = await mongoose.model('Customer').findOne({ userId: sender._id }).select('name');
+                        if (customerInfo && 'name' in customerInfo) {
+                            sender.name = customerInfo.name;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return project;
+};
+
 
 export const createProject = async (req: Request, projectData: IProject) => {
     const allProjects = await Project.find();
@@ -57,9 +109,61 @@ export const updateProjectById = async (req: Request, pId: string, projectData: 
 }
 
 export const deleteProjectById = async (req: Request, pId: string) => {
-    const deletedProject = await Project.findByIdAndDelete(pId);
-    if(!deletedProject){
+    // Tìm project trước khi xóa để lấy documentIds
+    const project = await Project.findById(pId);
+    if(!project) {
         throw new Error(req.t('delete.error', { ns: 'project' }));
-    } 
+    }
+
+    // Cập nhật trạng thái isTrash của tất cả documents liên quan
+    if(project.documentIds && project.documentIds.length > 0) {
+        await Document.updateMany(
+            { _id: { $in: project.documentIds } },
+            { isTrash: true }
+        );
+    }
+
+    // Xóa project
+    const deletedProject = await Project.findByIdAndDelete(pId);
     return deletedProject;
+}
+
+export const activeProject = async (req : Request , pId : string , data : {status : string , isActive : boolean}) => {
+    const project = await Project.findByIdAndUpdate(pId , data , {new : true});
+    if(!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+    return project;
+}
+
+export const getProjectByCustomerId = async (req : Request , cId : string) => {
+    const project = await Project.find({customer : cId , isActive : true})
+    .populate({
+        path : 'pm',
+        select : 'name emailContact'
+    })
+    .populate({
+        path : 'customer',
+        select : 'name emailContact'
+    })
+    if(!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+    return project;
+}
+
+export const getProjectRequestByCustomerId = async (req : Request , cId : string) => {
+    const project = await Project.find({customer : cId , isActive : false})
+    .populate({
+        path : 'pm',
+        select : 'name emailContact'
+    })
+    .populate({
+        path : 'customer',
+        select : 'name emailContact'
+    })
+    if(!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+    return project;
 }

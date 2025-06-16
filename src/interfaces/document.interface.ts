@@ -5,6 +5,7 @@ export interface IDocument {
    day: Date,
    files : Array<IFile>,
    sender : ObjectId
+   isTrash : boolean
 }
 
 export interface IFile {

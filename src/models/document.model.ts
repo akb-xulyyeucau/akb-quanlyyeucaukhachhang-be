@@ -12,9 +12,10 @@ const documentSchema = new Schema<IDocument>({
   name: { type: String, required: true },
   day: { type: Date, required: true },
   sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  files: { type: [fileSchema], required: true }
+  files: { type: [fileSchema], required: true },
+  isTrash: { type: Boolean, default: false }
 }, {
-  timestamps: true // Tùy chọn nếu bạn muốn track createdAt / updatedAt
+  timestamps: true 
 });
 
 const Document : Model<IDocument> = mongoose.model<IDocument>("Document", documentSchema);
