@@ -167,3 +167,17 @@ export const getProjectRequestByCustomerId = async (req : Request , cId : string
     }
     return project;
 }
+
+export const addDocumentToProject = async (req : Request , pId : string , dId : string) =>{
+    const updatedProject = await Project.findByIdAndUpdate(pId, 
+        {
+            $push : {documentIds : dId},
+        }, 
+        {new : true}
+    ).populate('documentIds');
+    if(!updatedProject){
+        throw new Error(req.t('notFound' , {ns : 'project'}));
+    }
+    return updatedProject;
+
+}

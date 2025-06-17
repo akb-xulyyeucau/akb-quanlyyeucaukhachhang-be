@@ -9,22 +9,29 @@ import {
  getProjectByIdController,
  activeProjectController,
  getProjectByCustomerIdController,
- getProjectRequestByCustomerIdController
+ getProjectRequestByCustomerIdController,
+ addDocumentToProjectController
 } from '../controllers/project.controller';
-import {  protect, authorize } from '../middlewares/auth.middleware';
+import { protect, authorize } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 router.use(protect);
-router.use(authorize('admin' , 'pm' , 'guest'));
+router.use(authorize('admin', 'pm', 'guest'));
 
-router.get('/' , expressAsyncHandler(getAllProjectController));
+// Route cụ thể trước
 router.get('/request', expressAsyncHandler(getProjectRequestController));
 router.get('/request/:cId', expressAsyncHandler(getProjectRequestByCustomerIdController));
 router.get('/customer/:cId', expressAsyncHandler(getProjectByCustomerIdController));
-router.get('/:pId', expressAsyncHandler(getProjectByIdController));
+
+// Thao tác cập nhật
+router.patch('/add-document/:pId', expressAsyncHandler(addDocumentToProjectController));
 router.post('/', expressAsyncHandler(createProjectController));
-router.patch('/active/:pId' , expressAsyncHandler(activeProjectController));
-router.put('/:pId' , expressAsyncHandler(updateProjectByIdController));
-router.delete('/:pId' , expressAsyncHandler(deleteProjectByIdController));
+router.patch('/active/:pId', expressAsyncHandler(activeProjectController));
+router.put('/:pId', expressAsyncHandler(updateProjectByIdController));
+router.delete('/:pId', expressAsyncHandler(deleteProjectByIdController));
+
+// Route tổng quát để cuối cùng
+router.get('/:pId', expressAsyncHandler(getProjectByIdController));
+router.get('/', expressAsyncHandler(getAllProjectController));
 
 export default router;

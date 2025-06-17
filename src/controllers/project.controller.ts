@@ -7,11 +7,13 @@ import {
     getProjectById,
     activeProject,
     getProjectByCustomerId,
-    getProjectRequestByCustomerId
+    getProjectRequestByCustomerId,
+    addDocumentToProject
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
 import {IProject} from '../interfaces/project.interface';
+import { pid } from 'process';
 
 export const createProjectController = async (req : Request , res : Response) => {
     try {
@@ -189,4 +191,23 @@ export const getProjectRequestByCustomerIdController = async (req : Request , re
             message : error.message
         })
     }
+}
+
+export const addDocumentToProjectController = async (req : Request , res : Response) => {
+  try {
+      const {pId} = req.params;
+      const {dId} = req.body;
+      const updatedProject = await addDocumentToProject(req , pId , dId);
+      res.status(200).json({
+        success : true,
+        message : req.t('addDocumentToProject.success', { ns: 'project' }),
+        data : updatedProject
+      })
+  } catch (error : any) {
+     res.status(400).json({
+        success : false,
+        message : error.message
+     })    
+  }
+
 }

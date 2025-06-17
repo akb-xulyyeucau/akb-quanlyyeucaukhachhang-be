@@ -19,5 +19,9 @@
     "success": "Xóa PM thành công",
     "noInfo": "Không có thông tin PM cần xóa",
     "deleteSuccess": "Xóa thông tin PM thành công"
+  },
+  "autoSearch": {
+    "success": "Tìm kiếm PM thành công",
+    "failed": "Tìm kiếm PM thất bại"
   }
 }

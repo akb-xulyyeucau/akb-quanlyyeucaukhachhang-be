@@ -9,7 +9,7 @@ i18next
   .init({
     fallbackLng: 'vi',
     preload: ['vi', 'ja'],
-    ns: ['translation', 'user' , 'auth' , 'customer' , 'pm' , 'project'],
+    ns: ['translation', 'user' , 'auth' , 'customer' , 'pm' , 'project' ],
     defaultNS: 'translation',
     backend: {
       loadPath: path.join(__dirname, '../locales/{{lng}}/{{ns}}.json'),
