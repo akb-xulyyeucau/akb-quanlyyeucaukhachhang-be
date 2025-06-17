@@ -1,1 +1,6 @@
-{}
+{
+    "delete": {
+        "success": "Xóa tài liệu thành công",
+        "failed": "Xóa tài liệu thất bại"
+    }
+}

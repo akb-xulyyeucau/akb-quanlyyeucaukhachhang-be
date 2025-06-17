@@ -1,6 +1,6 @@
 import { Request, Response, RequestHandler } from 'express';
-import { uploadDocument, deleteDocument, updateTrashStatus, getDocumentById } from '../services/document.service';
-import { IFile } from '../interfaces/document.interface';
+import { uploadDocument, deleteDocument, updateTrashStatus, getDocumentById, updateDocument  } from '../services/document.service';
+import { IFile, IDocument } from '../interfaces/document.interface';
 import path from 'path';
 import fs from 'fs';
 
@@ -79,7 +79,7 @@ export const deleteDocumentController = async (req : Request , res: Response)=>{
         const doc = await deleteDocument(documentId);
         res.status(200).json({
             success : true,
-            message : "Xóa tài liệu thành công",
+            message : req.t("delete.success", {ns : "document"}),
             data : doc
         })
     } catch (error : any) {
@@ -119,3 +119,56 @@ export const downloadFileController: RequestHandler = (req, res): void => {
     });
   }
 };
+
+export const updateDocumentController = async (req: Request, res: Response) => {
+  try {
+    const { documentId } = req.params;
+    const { name, day, sender } = req.body;
+    const existingFiles = JSON.parse(req.body.existingFiles || '[]');
+    const files = req.files as Express.Multer.File[];
+
+    // 0. Kiểm tra document tồn tại
+    const existingDoc = await getDocumentById(documentId);
+    if (!existingDoc) {
+      throw new Error("Không tìm thấy tài liệu");
+    }
+
+    // 1. Xử lý files mới nếu có
+    let updatedFiles = [...existingFiles]; // Bắt đầu với các file cũ còn lại
+
+    if (files && files.length > 0) {
+      // Thêm các file mới vào
+      const newFileInfos: IFile[] = files.map((file) => ({
+        originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
+        path: file.filename,
+        size: file.size,
+        type: file.mimetype,
+      }));
+      updatedFiles = [...updatedFiles, ...newFileInfos];
+    }
+
+    // 2. Tạo document data mới
+    const docData: IDocument = {
+      name,
+      day,
+      files: updatedFiles,
+      isTrash: false,
+      sender: existingDoc.sender // Giữ nguyên sender từ document cũ
+    };
+
+    const updatedDoc = await updateDocument(documentId, docData);
+    
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật tài liệu thành công",
+      data: updatedDoc
+    });
+  } catch (error: any) {
+    res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+

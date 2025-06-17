@@ -19,5 +19,9 @@
     "success": "PMを削除しました",
     "noInfo": "削除するPM情報がありません",
     "deleteSuccess": "PM情報を削除しました"
-  }
+  },
+  "autoSearch": {
+    "success": "PMの検索に成功しました",
+    "failed": "PMの検索に失敗しました"
+  } 
 }

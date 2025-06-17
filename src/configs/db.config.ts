@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 const isCloud = process.env.IS_CLOUD_MONGO;
 const connectDB = async () => {
-   if(isCloud === "true"){
+   if(isCloud === "false"){
     const uri = process.env.MONGO_URI;
     const dbName = process.env.DB_NAME;
      if (!uri || !dbName) {
@@ -12,7 +12,7 @@ const connectDB = async () => {
   }
     try {
         await mongoose.connect(uri as string , {dbName});
-        console.log(`Connected to MongoDB Database: ${dbName}`);
+        console.log(`Connected to MongoDB Database: ${dbName} in local`);
     } catch (error) {
         console.error('Error connecting to MongoDB:', error);
         process.exit(1);    
@@ -21,7 +21,7 @@ const connectDB = async () => {
    }else{
     try {
         await mongoose.connect(process.env.MONGO_URI_CLOUD as string);
-        console.log('MongoDB connected');
+        console.log('MongoDB connected to cloud');
       } catch (err:any) {
         console.error('MongoDB connection failed:', err);
         process.exit(1);
