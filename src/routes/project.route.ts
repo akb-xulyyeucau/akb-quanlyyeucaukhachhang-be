@@ -10,7 +10,8 @@ import {
  activeProjectController,
  getProjectByCustomerIdController,
  getProjectRequestByCustomerIdController,
- addDocumentToProjectController
+ addDocumentToProjectController,
+ endingProjectController
 } from '../controllers/project.controller';
 import { protect, authorize } from '../middlewares/auth.middleware';
 
@@ -27,6 +28,8 @@ router.get('/customer/:cId', expressAsyncHandler(getProjectByCustomerIdControlle
 router.patch('/add-document/:pId', expressAsyncHandler(addDocumentToProjectController));
 router.post('/', expressAsyncHandler(createProjectController));
 router.patch('/active/:pId', expressAsyncHandler(activeProjectController));
+router.patch('/ending/:pId', expressAsyncHandler(endingProjectController));
+
 router.put('/:pId', expressAsyncHandler(updateProjectByIdController));
 router.delete('/:pId', expressAsyncHandler(deleteProjectByIdController));
 

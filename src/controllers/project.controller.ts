@@ -8,7 +8,8 @@ import {
     activeProject,
     getProjectByCustomerId,
     getProjectRequestByCustomerId,
-    addDocumentToProject
+    addDocumentToProject,
+    endingProject
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
@@ -210,4 +211,25 @@ export const addDocumentToProjectController = async (req : Request , res : Respo
      })    
   }
 
+}
+
+export const endingProjectController = async (req : Request , res : Response) => {
+    try {
+        const {pId} = req.params;
+        const data = {
+            status : "Đã hoàn thành",
+            isActive : true
+        }
+        const activeProjects = await endingProject(req , pId , data);
+        res.status(200).json({
+            success : true,
+            message : req.t('active.success', { ns: 'project' }),
+            data : activeProjects
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
 }
