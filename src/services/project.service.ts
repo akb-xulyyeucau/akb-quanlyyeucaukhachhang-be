@@ -62,7 +62,6 @@ export const getProjectById = async (req: Request, pId: string) => {
     if (!project) {
         throw new Error(req.t('notFound', { ns: 'project' }));
     }
-
     // Add name to sender based on role
     if (project.documentIds?.length > 0) {
         for (const doc of project.documentIds as IDocumentPopulated[]) {
@@ -87,7 +86,6 @@ export const getProjectById = async (req: Request, pId: string) => {
 
     return project;
 };
-
 
 export const createProject = async (req: Request, projectData: IProject) => {
     const allProjects = await Project.find();
@@ -114,7 +112,6 @@ export const deleteProjectById = async (req: Request, pId: string) => {
     if(!project) {
         throw new Error(req.t('delete.error', { ns: 'project' }));
     }
-
     // Cập nhật trạng thái isTrash của tất cả documents liên quan
     if(project.documentIds && project.documentIds.length > 0) {
         await Document.updateMany(
@@ -122,7 +119,6 @@ export const deleteProjectById = async (req: Request, pId: string) => {
             { isTrash: true }
         );
     }
-
     // Xóa project
     const deletedProject = await Project.findByIdAndDelete(pId);
     return deletedProject;
@@ -180,4 +176,12 @@ export const addDocumentToProject = async (req : Request , pId : string , dId : 
     }
     return updatedProject;
 
+}
+
+export const endingProject = async (req : Request , pId : string , data : {status : string , isActive : boolean}) => {
+    const project = await Project.findByIdAndUpdate(pId , data , {new : true});
+    if(!project) {
+        throw new Error(req.t('notFound', { ns: 'project' }));
+    }
+    return project;
 }

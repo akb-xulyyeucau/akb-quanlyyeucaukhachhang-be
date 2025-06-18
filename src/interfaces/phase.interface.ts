@@ -11,4 +11,5 @@ export interface IPhaseItem {
     name: string,
     order: number,
     description: string,
+    day : Date
 }

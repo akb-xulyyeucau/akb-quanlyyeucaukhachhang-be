@@ -32,7 +32,7 @@ export const deletePhase = async (req : Request , phaseId : string) => {
 export const getPhaseByProjectId = async (req : Request , projectId : string) => {
     const project = await Project.findById(projectId);
     if(!project) throw new Error(req.t('projectNotFound' , {ns : 'project'}));
-    const phase =  await Phase.find({projectId : projectId});
+    const phase =  await Phase.findOne({projectId : projectId});
     if(!phase) throw new Error (req.t('phaseNotFound' , {ns : 'phase'}));
     return phase
 }
