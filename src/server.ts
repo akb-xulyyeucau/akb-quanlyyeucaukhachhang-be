@@ -14,6 +14,7 @@ import pmRoutes from "./routes/pm.route";
 import projectRoute from './routes/project.route'; 
 import path from "path";
 import documentRoute from './routes/document.route';
+import phaseRoute from './routes/phase.route';
 
 dotenv.config();
 
@@ -37,8 +38,12 @@ app.use("/api/:lng/customer", customerRoutes);
 app.use("/api/:lng/pm", pmRoutes);
 app.use("/api/:lng/project" , projectRoute);
 app.use("/api/:lng/document", documentRoute);
+app.use("/api/:lng/phase", phaseRoute);
+
 connectDB();
+
 cronJob();
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

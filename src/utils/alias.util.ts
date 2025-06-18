@@ -28,4 +28,3 @@ export const genAlias = (modelName: string, existingAliases: string[]) => {
     return `${prefix}${numberPart}`;
 };
 
-//ngu lon
