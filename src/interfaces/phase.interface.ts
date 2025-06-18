@@ -1,7 +1,10 @@
+import { ObjectId } from "mongoose";
+
 export interface IPhase {
-    projectId: string,
-    name : string, // tên giai đoạn trong dự án
+    projectId: ObjectId,
+    name : string, 
     phases : Array<IPhaseItem>
+    currentPhase : number
 }
 
 export interface IPhaseItem {
