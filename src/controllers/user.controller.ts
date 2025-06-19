@@ -61,9 +61,9 @@ export const getUserByIdController = async (req: Request , res: Response) : Prom
 // tạo user
 export const createUserController = async (req: Request, res: Response) : Promise<void> => {
     try {
-        const { email, password, role } = req.body;
+        const { email_user, password_user, role } = req.body;
         // Validate đơn giản
-        if (!email || !password ) {
+        if (!email_user || !password_user ) {
           res.status(400).json({ 
               success: false,
               message: req.t('create.validation', { ns: 'user' })
@@ -72,8 +72,8 @@ export const createUserController = async (req: Request, res: Response) : Promis
         }
 
         const userData: IUser = {
-            email,
-            password,
+            email: email_user,
+            password: password_user,
             alias: "",
             role: role || 'guest',
             isActive: false,
