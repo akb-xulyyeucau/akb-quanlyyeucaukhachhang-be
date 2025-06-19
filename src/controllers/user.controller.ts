@@ -76,7 +76,7 @@ export const createUserController = async (req: Request, res: Response) : Promis
             password: password_user,
             alias: "",
             role: role || 'guest',
-            isActive: false,
+            isActive: role === 'admin' ? true : false, // Admins are active by default
         };
 
         const newUser = await createUser(userData);
