@@ -52,7 +52,7 @@ export const createReport = async (req: Request, reportData: IReport) => {
 // Get all reports for a project
 export const getReportsByProject = async (req : Request,projectId: string) => {
   const reports = await Report.find({projectId})
-    .populate('sender', 'alias email')
+    .populate('sender', 'alias email role')
     .populate('projectId', 'name alias');
   if (!reports || reports.length === 0) {
       throw new Error(req.t('notFound', { ns: 'report' }));
@@ -90,12 +90,10 @@ export const updateReport = async (req: Request, reportId: string, reportData: I
         existingFilePaths = existingReport.subContent.flatMap(content => 
             content.files.map(file => file.path)
         );
-
         // Get all new file paths from update data
         const newFilePaths = reportData.subContent.flatMap(content => 
             content.files.map(file => file.path)
         );
-
         // Find files that need to be deleted (exist in old but not in new)
         const filesToDelete = existingFilePaths.filter(path => !newFilePaths.includes(path));
 
@@ -172,4 +170,3 @@ export const deleteReport = async (req : Request , reportId : string) => {
    }
    return deletedReport;
 }
-
