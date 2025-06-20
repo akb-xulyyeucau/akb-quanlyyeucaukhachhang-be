@@ -197,7 +197,7 @@ export const getProjectRequestByCustomerIdController = async (req : Request , re
 export const addDocumentToProjectController = async (req : Request , res : Response) => {
   try {
       const {pId} = req.params;
-      const {dId} = req.body;
+      const {dId} = req.body;   
       const updatedProject = await addDocumentToProject(req , pId , dId);
       res.status(200).json({
         success : true,
@@ -205,7 +205,7 @@ export const addDocumentToProjectController = async (req : Request , res : Respo
         data : updatedProject
       })
   } catch (error : any) {
-     res.status(400).json({
+     res.status(400).json({ 
         success : false,
         message : error.message
      })    
