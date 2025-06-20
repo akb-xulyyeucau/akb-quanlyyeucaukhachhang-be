@@ -4,7 +4,6 @@ import { Request } from 'express';
 import { IFile } from '../interfaces/document.interface';
 import fs from 'fs';
 import path from 'path';
-import { report } from 'process';
 const uploadDir = path.join(__dirname, "..", "uploads");    
 export const createReport = async (req: Request, reportData: IReport) => {
     try {

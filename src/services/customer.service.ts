@@ -3,6 +3,7 @@ import { ICustomer } from '../interfaces/customer.interface';
 import { genAlias } from '../utils/alias.util';
 import User from '../models/user.model';
 import { Request } from 'express';
+import {splitVietnameseName , compareVN} from '../utils/name.util';
 
 export const createCustomer = async (req: Request, customerData: ICustomer) => {
     try {
@@ -102,9 +103,17 @@ export const getCustomerPagniton = async (req: Request, {
       });
     } else if (sortBy === 'name') {
       customers = customers.sort((a, b) => {
-        return sort === 'asc'
-          ? a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' })
-          : b.name.localeCompare(a.name, 'vi', { sensitivity: 'base' });
+        const nameA = splitVietnameseName(a.name);
+        const nameB = splitVietnameseName(b.name);
+
+        const compareFirst = compareVN(nameA.firstName, nameB.firstName);
+        if (compareFirst !== 0) return sort === 'asc' ? compareFirst : -compareFirst;
+
+        const compareLast = compareVN(nameA.lastName, nameB.lastName);
+        if (compareLast !== 0) return sort === 'asc' ? compareLast : -compareLast;
+
+        const compareMiddle = compareVN(nameA.middleName, nameB.middleName);
+        return sort === 'asc' ? compareMiddle : -compareMiddle;
       });
     }
 
