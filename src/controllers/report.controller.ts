@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createReport, getReportsByProject, getReportById , deleteReport} from '../services/report.service';
+import { createReport, getReportsByProject, getReportById , deleteReport, updateReport} from '../services/report.service';
 import { uploadMultiple } from '../middlewares/upload.middleware';
 import { IFile } from '../interfaces/document.interface';
 import { IReport } from '../interfaces/report.interface';
@@ -51,11 +51,12 @@ export const createReportController = async (req: Request, res: Response) => {
             const report = await createReport(req, reportData);
             res.status(201).json({
                 success: true,
+                message : req.t('create.success', { ns: 'report' }),
                 data: report
             });
         });
     } catch (error: any) {
-        res.status(500).json({
+        res.status(400).json({
             success: false,
             message: error.message
         });
@@ -68,10 +69,11 @@ export const getProjectReportsController = async (req: Request, res: Response) =
         const reports = await getReportsByProject(req , projectId);
         res.status(200).json({
             success: true,
+            message: req.t('getAll.success', { ns: 'report' }),
             data: reports
         });
     } catch (error: any) {
-        res.status(500).json({
+        res.status(400).json({
             success: false,
             message: error.message
         });
@@ -84,10 +86,89 @@ export const getReportDetailController = async (req: Request, res: Response) => 
         const report = await getReportById(req ,reportId);
         res.status(200).json({
             success: true,
+            message: req.t('getDetail.success', { ns: 'report' }),
             data: report
         });
     } catch (error: any) {
-        res.status(500).json({
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+export const updateReportController = async (req: Request, res: Response) => {
+    try {
+        const { reportId } = req.params;
+        
+        // Handle file upload
+        uploadMultiple(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({
+                    success: false,
+                    message: err.message
+                });
+            }
+
+            // Get new files if any
+            const files = req.files as Express.Multer.File[] || [];
+            
+            // Transform new uploaded files into IFile format
+            const newUploadedFiles: IFile[] = files.map(file => ({
+                originalName: file.originalname,
+                path: file.filename,
+                size: file.size,
+                type: file.mimetype
+            }));
+
+            // Get update data from request body
+            const { mainContent, projectId, subContent } = req.body;
+            let parsedSubContent;
+            
+            try {
+                parsedSubContent = JSON.parse(subContent);
+            } catch (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid subContent format'
+                });
+            }
+
+            // Map new files to their respective subContent sections
+            parsedSubContent.forEach((content: any) => {
+                // Keep existing files
+                const existingFiles = content.files || [];
+                
+                // Add new files if fileIndices is provided
+                if (content.fileIndices && content.fileIndices.length > 0) {
+                    const newFiles = content.fileIndices.map((index: number) => newUploadedFiles[index]).filter(Boolean);
+                    content.files = [...existingFiles, ...newFiles];
+                } else {
+                    content.files = existingFiles;
+                }
+                
+                // Remove fileIndices as it's not needed in the database
+                delete content.fileIndices;
+            });
+
+            // Create report update data
+            const reportData: IReport = {
+                mainContent,
+                sender: req.user?._id as ObjectId,
+                projectId,
+                subContent: parsedSubContent,
+                day: new Date()
+            };
+
+            const updatedReport = await updateReport(req, reportId, reportData);
+            res.status(200).json({
+                success: true,
+                message : req.t('update.success', { ns: 'report' }),
+                data: updatedReport
+            });
+        });
+    } catch (error: any) {
+        res.status(400).json({
             success: false,
             message: error.message
         });
@@ -100,10 +181,11 @@ export const deleteReportController = async (req : Request, res: Response) => {
         const deletedReport = await deleteReport(req, reportId);
         res.status(200).json({
             success: true,
+            message: req.t('delete.success', { ns: 'report' }),
             data: deletedReport
         });
     } catch (error: any) {
-        res.status(500).json({
+        res.status(400).json({
             success: false,
             message: error.message
         });

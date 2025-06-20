@@ -71,19 +71,89 @@ export const getReportById = async (req: Request, reportId: string) => {
    return report;   
 }
 
-export const updateReport = async (req : Request , reportId : string , reportData:IReport) => {
-    const {mainContent , day , sender , projectId , subContent} = reportData;
-    const report = await Report.findByIdAndUpdate(reportId, {
-        mainContent,
-        day,
-        sender,
-        projectId,
-        subContent
-    }, { new: true });
-    if (!report) {
-        throw new Error(req.t('notFound', { ns: 'report' }));
+export const updateReport = async (req: Request, reportId: string, reportData: IReport) => {
+    // Declare variable outside try-catch block
+    let existingFilePaths: string[] = [];
+    
+    try {
+        if (!reportData || !reportData.mainContent || !reportData.projectId || !reportData.subContent || !reportData.sender) {
+            throw new Error(req.t('invalidData', { ns: 'report' }));
+        }
+
+        // Get existing report
+        const existingReport = await Report.findById(reportId);
+        if (!existingReport) {
+            throw new Error(req.t('notFound', { ns: 'report' }));
+        }
+
+        // Get all existing file paths
+        existingFilePaths = existingReport.subContent.flatMap(content => 
+            content.files.map(file => file.path)
+        );
+
+        // Get all new file paths from update data
+        const newFilePaths = reportData.subContent.flatMap(content => 
+            content.files.map(file => file.path)
+        );
+
+        // Find files that need to be deleted (exist in old but not in new)
+        const filesToDelete = existingFilePaths.filter(path => !newFilePaths.includes(path));
+
+        // Delete files that are no longer needed
+        for (const filePath of filesToDelete) {
+            const fullPath = path.join(uploadDir, path.basename(filePath));
+            if (fs.existsSync(fullPath)) {
+                try {
+                    fs.unlinkSync(fullPath);
+                    console.log('Successfully deleted file:', fullPath);
+                } catch (error) {
+                    console.error('Error deleting file:', fullPath, error);
+                }
+            }
+        }
+
+        // Update report in database
+        const updatedReport = await Report.findByIdAndUpdate(
+            reportId,
+            {
+                mainContent: reportData.mainContent,
+                day: reportData.day,
+                sender: reportData.sender,
+                projectId: reportData.projectId,
+                subContent: reportData.subContent
+            },
+            { 
+                new: true,
+                runValidators: true 
+            }
+        ).populate('sender', 'alias email')
+         .populate('projectId', 'name alias');
+
+        if (!updatedReport) {
+            throw new Error(req.t('updateFailed', { ns: 'report' }));
+        }
+
+        return updatedReport;
+    } catch (error) {
+        // If there's an error, we should try to clean up any new files that were uploaded
+        const newFiles = reportData.subContent.flatMap(content => 
+            content.files.filter(file => !existingFilePaths.includes(file.path))
+        );
+
+        for (const file of newFiles) {
+            const fullPath = path.join(uploadDir, path.basename(file.path));
+            if (fs.existsSync(fullPath)) {
+                try {
+                    fs.unlinkSync(fullPath);
+                    console.log('Cleaned up new file after error:', fullPath);
+                } catch (cleanupError) {
+                    console.error('Error cleaning up file:', fullPath, cleanupError);
+                }
+            }
+        }
+
+        throw error;
     }
-    return report;
 }
 
 export const deleteReport = async (req : Request , reportId : string) => {
