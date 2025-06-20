@@ -1,16 +1,29 @@
 import mongoose , {Model , Schema} from "mongoose";
-import { IReport } from "../interfaces/report.interface";
+import {  IReport, ISubContent } from "../interfaces/report.interface";
+import { IFile } from "../interfaces/document.interface";
 
-
-const reportSchema = new mongoose.Schema<IReport>({
-    name : {type : String },
-    alias : {type : String , unique : true},
-    content : {type : String},
-    projectId : {type : Schema.Types.ObjectId , ref : 'Project' },
-    documentIds : [{type : Schema.Types.ObjectId , ref : 'Document'}],
-    day : {type : Date , default : Date.now()},
-    sender : {type : Schema.Types.ObjectId}
+const fileSchema = new mongoose.Schema<IFile>({
+    originalName: { type: String },
+    path: { type: String, required: true },
+    size: { type: Number },
+    type: { type: String },
 });
 
-const Report : Model<IReport> = mongoose.model<IReport>("Report" , reportSchema);
+const subContentSchema = new mongoose.Schema<ISubContent>({
+    contentName : { type: String, required: true },
+    files: { type: [fileSchema], required: true },
+})
+
+const reportSchema = new Schema<IReport>({
+    mainContent: { type: String, required: true },
+    day: { type: Date, default: Date.now },
+    sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    projectId: { type: Schema.Types.ObjectId, ref: "Project", required: true },
+    subContent: { type: [subContentSchema], required: true }
+}, {
+    timestamps: true
+});
+
+const Report : Model<IReport> = mongoose.model<IReport>("Report", reportSchema);
+
 export default Report;

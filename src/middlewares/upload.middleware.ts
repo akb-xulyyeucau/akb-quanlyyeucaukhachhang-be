@@ -1,10 +1,8 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-
 // Trỏ tới thư mục uploads bên trong src
 const uploadDir = path.join(__dirname, "..", "uploads");
-
 // Tạo thư mục nếu chưa có
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);

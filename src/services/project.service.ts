@@ -54,8 +54,8 @@ export const getProjectById = async (req: Request, pId: string) => {
             path: 'documentIds',
             populate: {
                 path: 'sender',
-                select: 'email alias role name',
-                model: 'User'
+                select: '_id email alias role',
+                model: 'User',
             },
         }) as unknown as IProjectPopulated;
 
