@@ -15,6 +15,7 @@ import projectRoute from './routes/project.route';
 import path from "path";
 import documentRoute from './routes/document.route';
 import phaseRoute from './routes/phase.route';
+import reportRoute from './routes/report.route';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/:lng/pm", pmRoutes);
 app.use("/api/:lng/project" , projectRoute);
 app.use("/api/:lng/document", documentRoute);
 app.use("/api/:lng/phase", phaseRoute);
+app.use("/api/:lng/report", reportRoute);
 
 connectDB();
 

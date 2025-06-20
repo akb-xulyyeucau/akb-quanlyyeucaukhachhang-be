@@ -1,11 +1,16 @@
 import {ObjectId} from 'mongoose'
-import { IDocument } from './document.interface'
+import { IDocument, IFile } from './document.interface'
+
 export interface IReport {
-    name : string,
-    alias : string,
-    content : string,
-    projectId : ObjectId,
-    documentIds : Array<IDocument>,
-    day : Date,
-    sender : ObjectId
+    mainContent : string;
+    day : Date;
+    sender : ObjectId;
+    projectId : ObjectId;
+    subContent : ISubContent[];
 }
+
+export interface ISubContent {
+    contentName : string;
+    files : IFile[];
+}
+

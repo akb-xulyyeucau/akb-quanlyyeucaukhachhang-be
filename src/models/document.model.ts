@@ -8,6 +8,7 @@ const fileSchema = new mongoose.Schema<IFile>({
     type: {type : String},
 })
 
+
 const documentSchema = new Schema<IDocument>({
   name: { type: String, required: true },
   day: { type: Date, required: true },
