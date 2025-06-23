@@ -5,6 +5,15 @@ import { IFile } from '../interfaces/document.interface';
 import { IReport } from '../interfaces/report.interface';
 import { ObjectId } from 'mongoose';
 
+// Hàm xử lý tên file tiếng Việt
+const decodeVietnameseFilename = (filename: string): string => {
+    try {
+        return Buffer.from(filename, 'binary').toString('utf8');
+    } catch (error) {
+        return filename;
+    }
+};
+
 export const createReportController = async (req: Request, res: Response) => {
     try {
         // Handle file upload
@@ -23,9 +32,9 @@ export const createReportController = async (req: Request, res: Response) => {
                     message: 'No files uploaded'
                 });
             }
-            // Transform uploaded files into IFile format
+            // Transform uploaded files into IFile format with Vietnamese filename support
             const uploadedFiles: IFile[] = files.map(file => ({
-                originalName: file.originalname,
+                originalName: decodeVietnameseFilename(file.originalname),
                 path: file.filename,
                 size: file.size,
                 type: file.mimetype
@@ -113,9 +122,9 @@ export const updateReportController = async (req: Request, res: Response) => {
             // Get new files if any
             const files = req.files as Express.Multer.File[] || [];
             
-            // Transform new uploaded files into IFile format
+            // Transform new uploaded files into IFile format with Vietnamese filename support
             const newUploadedFiles: IFile[] = files.map(file => ({
-                originalName: file.originalname,
+                originalName: decodeVietnameseFilename(file.originalname),
                 path: file.filename,
                 size: file.size,
                 type: file.mimetype
