@@ -3,7 +3,9 @@ import { IFile } from '../interfaces/document.interface';
 import Document from '../models/document.model';
 import fs from 'fs';
 import path from 'path';
-const uploadDir = path.join(__dirname, "..", "uploads");
+
+const uploadDir = path.join(__dirname, "../uploads");
+
 export const uploadDocument = async (docData: IDocument) => {
   const {
     name,

@@ -171,4 +171,51 @@ export const updateDocumentController = async (req: Request, res: Response) => {
   }
 };
 
+export const getUploadedFiles = async (req: Request, res: Response) => {
+  try {
+    const uploadsDir = path.join(__dirname, "../uploads");
+    
+    // Read all files from the uploads directory
+    const files = fs.readdirSync(uploadsDir);
+    
+    // Get file details
+    const fileDetails = files.map(file => {
+      const filePath = path.join(uploadsDir, file);
+      const stats = fs.statSync(filePath);
+      const extension = path.extname(file).toLowerCase();
+      
+      return {
+        name: file,
+        path: `/uploads/${file}`, // URL path to access the file
+        size: stats.size,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime,
+        type: extension === '.pdf' ? 'pdf' : 
+              ['.jpg', '.jpeg', '.png', '.gif'].includes(extension) ? 'image' : 
+              'other'
+      };
+    });
+
+    // Filter only PDF and image files if specified in query
+    const fileType = req.query.type as string;
+    let filteredFiles = fileDetails;
+    if (fileType === 'pdf') {
+      filteredFiles = fileDetails.filter(file => file.type === 'pdf');
+    } else if (fileType === 'image') {
+      filteredFiles = fileDetails.filter(file => file.type === 'image');
+    }
+
+    res.status(200).json({
+      success: true,
+      data: filteredFiles
+    });
+  } catch (error) {
+    console.error('Error reading uploads directory:', error);
+    res.status(400).json({
+      success: false,
+      message: 'Error reading uploaded files'
+    });
+  }
+};
+
 
