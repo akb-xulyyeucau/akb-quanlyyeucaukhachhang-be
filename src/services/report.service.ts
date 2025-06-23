@@ -57,7 +57,15 @@ export const getReportsByProject = async (req : Request,projectId: string) => {
   if (!reports || reports.length === 0) {
       throw new Error(req.t('notFound', { ns: 'report' }));
   }
-  return reports;
+  // Transform reports to include subContent count
+  const reportsWithSubContentCount = reports.map(report => {
+    const reportObj = report.toObject();
+    return {
+      ...reportObj,
+      subContentCount: report.subContent.length
+    };
+  });
+  return reportsWithSubContentCount;
 }
 
 // Get report detail

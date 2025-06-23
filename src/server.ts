@@ -21,15 +21,37 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors(corsOptions));
+// Basic middleware
 app.use(express.json());
-app.use(cookieParser());
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// CORS configuration
+app.use(cors({
+  ...corsOptions,
+  exposedHeaders: ['Content-Disposition', 'Content-Type'] // Add this for file downloads
+}));
+
+// Static file serving with CORS enabled
+app.use("/uploads", (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', process.env.FE_URL || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, "uploads"), {
+  setHeaders: (res, filePath) => {
+    // Set proper content type for PDF files
+    if (filePath.endsWith('.pdf')) {
+      res.set('Content-Type', 'application/pdf');
+    }
+  }
+}));
 
 // Add language detection middleware
 app.use('/api/:lng/', i18nextMiddleware.handle(i18next));
 
+// Routes
 app.get("/", (_req, res) => {
   res.send("Server is running with TypeScript!");
 });
@@ -46,7 +68,7 @@ connectDB();
 
 cronJob();
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5051;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });

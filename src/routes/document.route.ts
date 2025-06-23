@@ -6,7 +6,8 @@ import {
   getDocumentByIdController,
   downloadFileController,
   deleteDocumentController,
-  updateDocumentController
+  updateDocumentController,
+  getUploadedFiles
 } from '../controllers/document.controller';
 import { protect } from '../middlewares/auth.middleware';
 const router = express.Router();
@@ -19,5 +20,6 @@ router.patch("/trash/:documentId", updateTrashStatusController);
 router.get("/:documentId", getDocumentByIdController);
 router.delete("/:documentId", deleteDocumentController);
 router.put("/:documentId", uploadMultiple, updateDocumentController);
+router.get("/uploads", getUploadedFiles);
 
 export default router;

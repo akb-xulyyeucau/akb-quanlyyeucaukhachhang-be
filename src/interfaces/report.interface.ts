@@ -7,6 +7,7 @@ export interface IReport {
     sender : ObjectId;
     projectId : ObjectId;
     subContent : ISubContent[];
+    subContentCount?: number; // Optional field for response only
 }
 
 export interface ISubContent {
