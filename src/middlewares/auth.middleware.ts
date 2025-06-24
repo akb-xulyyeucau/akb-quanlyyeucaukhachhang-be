@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import { IUserDocument } from '../interfaces/user.interface';
+import mongoose from 'mongoose';
+import { IProject } from '../interfaces/project.interface';
+import Project from '../models/project.model';
 
 
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -99,3 +102,6 @@ export const authorize = (...roles: string[]) => {
         next();
     };
 };
+
+// middlewares/checkOwnership.ts
+

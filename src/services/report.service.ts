@@ -4,6 +4,8 @@ import { Request } from 'express';
 import { IFile } from '../interfaces/document.interface';
 import fs from 'fs';
 import path from 'path';
+import Customer from '../models/customer.model';
+import Project from '../models/project.model';
 const uploadDir = path.join(__dirname, "..", "uploads");    
 export const createReport = async (req: Request, reportData: IReport) => {
     try {
@@ -28,7 +30,6 @@ export const createReport = async (req: Request, reportData: IReport) => {
                 files: files
             };
         });
-
         // Create new report
         const report = await Report.create({
             mainContent,
@@ -37,8 +38,6 @@ export const createReport = async (req: Request, reportData: IReport) => {
             projectId,
             subContent: parsedSubContent
         });
-
-        // Populate sender information
         const populatedReport = await Report.findById(report._id)
             .populate('sender', 'alias email')
             .populate('projectId', 'name alias');
@@ -49,23 +48,77 @@ export const createReport = async (req: Request, reportData: IReport) => {
     }
 }
 
-// Get all reports for a project
-export const getReportsByProject = async (req : Request,projectId: string) => {
-  const reports = await Report.find({projectId})
-    .populate('sender', 'alias email role')
-    .populate('projectId', 'name alias');
-  if (!reports || reports.length === 0) {
-      throw new Error(req.t('notFound', { ns: 'report' }));
+export const getReportsByProject = async (req : Request, projectId: string , {search =  "" , isCustomer = ""}) => {
+  const queryConditions: any = { projectId };
+
+  if (search) {
+    queryConditions.mainContent = { $regex: search, $options: 'i' };
   }
-  // Transform reports to include subContent count
-  const reportsWithSubContentCount = reports.map(report => {
+
+  const reports = await Report.find(queryConditions)
+    .populate({
+      path: 'sender',
+      select: 'alias email role'
+    })
+    .populate('projectId', 'name alias');
+
+  // Nếu không có dữ liệu, trả về mảng rỗng
+  if (!reports || reports.length === 0) {
+    return {
+      data: [],
+      message: req.t('notFound', { ns: 'report'})
+    };
+  }
+
+  // Filter reports based on sender role
+  let filteredReports = reports;
+  
+  // Chỉ filter khi có giá trị isCustomer cụ thể (true hoặc false)
+  if (isCustomer === 'true') {
+    // Nếu isCustomer là true, chỉ lấy report của guest
+    filteredReports = reports.filter(report => {
+      const sender = report.sender as any;
+      return sender && sender.role === 'guest';
+    });
+  } else if (isCustomer === 'false') {
+    // Nếu isCustomer là false, chỉ lấy report của pm/admin
+    filteredReports = reports.filter(report => {
+      const sender = report.sender as any;
+      return sender && (sender.role === 'admin' || sender.role === 'pm');
+    });
+  }
+  // Nếu isCustomer là empty string, trả về tất cả reports (không filter)
+
+  const reportsWithSubContentCount = filteredReports.map(report => {
     const reportObj = report.toObject();
     return {
       ...reportObj,
       subContentCount: report.subContent.length
     };
   });
-  return reportsWithSubContentCount;
+  const userId = req.user?._id;
+    const userRole = req.user?.role;
+    console.log("User ID:", userId);
+    console.log("User Role:", userRole);
+
+    if (userRole === 'guest') {
+        const c = await Customer.findOne({ userId });
+        const p = await Project.findOne({ _id: projectId });
+        console.log("Customer found:", c);
+        console.log("Project found:", p);
+        console.log("Customer ID from Customer:", c?._id?.toString());
+        console.log("Customer ID from Project:", p?.customer?.toString());
+        if (!c || !p) {
+            throw new Error("Không tìm thấy thông tin khách hàng hoặc dự án");
+        }
+        if (c._id.toString() !== p.customer.toString()) {
+            throw new Error("Ngoài quyền sở hữu");
+        }
+    }
+  return {
+    data: reportsWithSubContentCount,
+    message: req.t('getAll.success', { ns: 'report' })
+  };
 }
 
 // Get report detail

@@ -15,11 +15,11 @@ const router = express.Router();
 
 router.use(protect);
 router.post('/', authorize('admin'), expressAsyncHandler(createCustomerCotroller));
-router.get('/', authorize('admin'), expressAsyncHandler(getAllCustomerController));
+router.get('/', authorize('admin', 'pm' ), expressAsyncHandler(getAllCustomerController));
 router.get('/auto-search' , protect, expressAsyncHandler(autoSearchCustomersController));
-router.get('/search', authorize('admin' ), expressAsyncHandler(getCustomerPagnitonController));
-router.get('/:userId', authorize('admin'), expressAsyncHandler(getCustomerByUserIdController));
-router.put('/:id' , authorize('admin'), expressAsyncHandler(updateCustomerByIdController));
-router.delete('/:id', authorize('admin'), expressAsyncHandler(deleteCustomerByIdController));
-router.delete('/user/:id', authorize('admin') , expressAsyncHandler(deleteCustomerByUserIdController));
+router.get('/search', authorize('admin', 'pm'), expressAsyncHandler(getCustomerPagnitonController));
+router.get('/:userId', authorize('admin', 'pm'), expressAsyncHandler(getCustomerByUserIdController));
+router.put('/:id' , authorize('admin', 'pm'), expressAsyncHandler(updateCustomerByIdController));
+router.delete('/:id', authorize('admin', 'pm'), expressAsyncHandler(deleteCustomerByIdController));
+router.delete('/user/:id', authorize('admin', 'pm') , expressAsyncHandler(deleteCustomerByUserIdController));
 export default router;

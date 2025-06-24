@@ -75,16 +75,25 @@ export const createReportController = async (req: Request, res: Response) => {
 export const getProjectReportsController = async (req: Request, res: Response) => {
     try {
         const { projectId } = req.params;
-        const reports = await getReportsByProject(req , projectId);
+        // Decode and handle query parameters properly
+        const search = req.query.search ? decodeURIComponent(req.query.search as string) : "";
+        const isCustomer = req.query.isCustomer as string || "";
+        const result = await getReportsByProject(req, projectId, {
+            search: search,
+            isCustomer: isCustomer
+        });
+
         res.status(200).json({
             success: true,
-            message: req.t('getAll.success', { ns: 'report' }),
-            data: reports
+            message: result.message,
+            data: result.data
         });
     } catch (error: any) {
+        console.error('Error in getProjectReportsController:', error);
         res.status(400).json({
             success: false,
-            message: error.message
+            message: error.message,
+            data: []
         });
     }
 };

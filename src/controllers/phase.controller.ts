@@ -28,6 +28,8 @@ export const getPhaseByProjectIdController = async (req : Request , res : Respon
     try {
         const {projectId} = req.params;
         const phase = await getPhaseByProjectId(req , projectId);
+        const userId = req.user?._id;
+        console.log('User ID:', userId);
         res.status(200).json({
             success : true,
             message : req.t('getPhase.success' , {ns : 'phase'}),
@@ -35,7 +37,7 @@ export const getPhaseByProjectIdController = async (req : Request , res : Respon
         })
     } catch (error : any) {
         res.status(400).json({
-            success : true,
+            success : false,
             message : error.message
         })
     }
