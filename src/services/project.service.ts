@@ -4,6 +4,8 @@ import Document from '../models/document.model';
 import { genAlias } from '../utils/alias.util';
 import { Request } from 'express';
 import mongoose from 'mongoose';
+import Customer from '../models/customer.model';
+import Phase from '../models/phase.model';
 
 export const getAllProject = async (req: Request) => {
     const project = await Project.find({isActive : true})
@@ -83,7 +85,14 @@ export const getProjectById = async (req: Request, pId: string) => {
             }
         }
     }
-
+    const userId = req.user?._id; 
+    const userRole = req.user?.role;
+    if(userRole === 'guest') {
+       const c =  await Customer.findOne({userId});
+        if(c?._id.toString() !== project.customer._id.toString()){
+             throw new Error("Ngoài quyền sở hữu tài nguyên")
+        }
+    }
     return project;
 };
 
@@ -142,7 +151,7 @@ export const getProjectByCustomerId = async (req : Request , cId : string) => {
         path : 'customer',
         select : 'name emailContact'
     })
-    if(!project) {
+    if(!project ) {
         throw new Error(req.t('notFound', { ns: 'project' }));
     }
     return project;
@@ -185,3 +194,29 @@ export const endingProject = async (req : Request , pId : string , data : {statu
     }
     return project;
 }
+
+export const projectStatisticById = async (req : Request , projectId : string) => {
+    try {
+        const project  = await Project.findById(projectId)
+        .populate({
+            path : 'pm',
+            select : 'name alias emailContact'
+        })
+        .populate ({
+            path : 'customer',
+            select : 'name alias emailContact'
+        })
+        .populate('documentIds');
+        console.log("project : " , project);
+        // thông tin các giai đoạn của dự án
+        const startDate = project?.day;
+        const phaseInProject = await Phase.findOne({projectId : projectId});
+        const currentPhase = phaseInProject?.currentPhase;
+        const phaseNum = phaseInProject?.phases.length || 0;
+        const estimateDate = phaseInProject?.phases[phaseNum -1].day;
+        // thông tin báo cáo
+        
+    } catch (error) {
+        
+    }
+} 

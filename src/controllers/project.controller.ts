@@ -14,7 +14,6 @@ import {
 
 import {Request , Response} from 'express';
 import {IProject} from '../interfaces/project.interface';
-import { pid } from 'process';
 
 export const createProjectController = async (req : Request , res : Response) => {
     try {
