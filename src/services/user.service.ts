@@ -3,7 +3,6 @@ import { IUser } from '../interfaces/user.interface';
 import { genAlias  } from "../utils/alias.util";
 import Customer from "../models/customer.model";
 import PM from "../models/pm.model";
-
 // lấy tất cả user
 export const getAllUser = async () => {
     const users = await User.find();
@@ -12,7 +11,6 @@ export const getAllUser = async () => {
     }
     return users;
 }
-
 // lấy user theo id
 export const getUserById = async (id: string) => {
     const user = await User.findById(id);
@@ -21,7 +19,6 @@ export const getUserById = async (id: string) => {
     }
     return user;
 }
-
 // tạo user
 export const createUser = async (userData: IUser) => {
     const existUser = await User.findOne({email: userData.email})
@@ -134,4 +131,35 @@ export const me = async (userId : string) => {
         return {user , profile: null};
     }
     throw new Error('User not found');
+}
+
+export const userStatistic = async () => {
+   try {
+        const users = await User.find();
+        const totalUsers = users.length;
+        const totalActive = users.filter((u) => (u.isActive))
+        const totalCustomerActive = users.filter((u) => (u.role==='guest' && u.isActive));
+        const totalPMActive = users.filter((u) => (u.role==='pm' && u.isActive));
+        let percentActive = 0;
+        let percentPM = 0
+        let percentCustomer = 0
+        if(totalUsers !== 0){
+            percentActive = Math.round((totalActive.length / totalUsers) * 100);
+        }
+        if(totalActive.length !== 0){
+            percentPM = Math.round((totalActive.length / totalUsers) * 100);
+            percentCustomer = 100 - percentPM;
+        }
+        return {
+            totalUsers : totalUsers,
+            totalActive : totalActive.length,
+            percentActive : percentActive,
+            totalCustomer : totalCustomerActive.length,
+            totalPM : totalPMActive.length,
+            percentPM,
+            percentCustomer
+        }
+   } catch (error : any) {
+        throw new Error(error.message)
+   }
 }

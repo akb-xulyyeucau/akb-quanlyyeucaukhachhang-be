@@ -6,7 +6,8 @@ import {
     getAllUser , 
     getUser,
     updateUserActive,
-    me
+    me,
+    userStatistic
 } from "../services/user.service";
 import { Request, Response } from "express";
 import { IUser } from "../interfaces/user.interface";
@@ -234,5 +235,21 @@ export const meController = async (req: Request, res: Response) => {
             success: false,
             message: req.t('me.error', { ns: 'user', error: error.message })
         });
+    }
+}
+
+export const userStatisticController = async (req : Request , res : Response) => {
+    try {
+        const statistic = await userStatistic();
+        res.status(200).json({
+            success : true,
+            message : req.t('user.statistic.success' , {ns : 'user'}),
+            data : statistic
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : false,
+            message : error.message
+        })
     }
 }

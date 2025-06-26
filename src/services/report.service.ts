@@ -60,7 +60,9 @@ export const getReportsByProject = async (req : Request, projectId: string , {se
       path: 'sender',
       select: 'alias email role'
     })
-    .populate('projectId', 'name alias');
+    .populate('projectId', 'name alias')
+    .sort({ createdAt: -1 });
+
 
   // Nếu không có dữ liệu, trả về mảng rỗng
   if (!reports || reports.length === 0) {

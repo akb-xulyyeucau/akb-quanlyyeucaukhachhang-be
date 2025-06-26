@@ -6,10 +6,12 @@ import {
     deleteCustomerById,
     deleteCustomerByUserId,
     getCustomerPagniton,
-    autoSearchCustomers
+    autoSearchCustomers,
+    customerStatistic
  } from '../services/customer.service';
 import { Request, Response } from 'express';
 import {ICustomer} from  "../interfaces/customer.interface";
+import Customer from '../models/customer.model';
 
 export const createCustomerCotroller = async (req : Request , res : Response) => {
     try {
@@ -171,6 +173,22 @@ export const autoSearchCustomersController = async (req : Request , res : Respon
         res.status(400).json({
             success : false,
             message : error.message
+        })
+    }
+}
+
+export const customerStatisticController = async (req : Request , res : Response) => {
+    try {
+        const statistic = await customerStatistic();
+        res.status(200).json({
+            success : true,
+            message : "Lấy thành công",
+            data : statistic
+        })
+    } catch (error : any) {
+        res.status(400).json({
+            success : true,
+            message : error.message,
         })
     }
 }

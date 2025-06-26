@@ -6,7 +6,8 @@ import { Request } from 'express';
 import mongoose from 'mongoose';
 import Customer from '../models/customer.model';
 import Phase from '../models/phase.model';
-
+import Report from '../models/report.model';
+import dayjs from 'dayjs';
 export const getAllProject = async (req: Request) => {
     const project = await Project.find({isActive : true})
     .populate({
@@ -195,28 +196,70 @@ export const endingProject = async (req : Request , pId : string , data : {statu
     return project;
 }
 
-export const projectStatisticById = async (req : Request , projectId : string) => {
-    try {
-        const project  = await Project.findById(projectId)
-        .populate({
-            path : 'pm',
-            select : 'name alias emailContact'
-        })
-        .populate ({
-            path : 'customer',
-            select : 'name alias emailContact'
-        })
-        .populate('documentIds');
-        console.log("project : " , project);
-        // thông tin các giai đoạn của dự án
-        const startDate = project?.day;
-        const phaseInProject = await Phase.findOne({projectId : projectId});
-        const currentPhase = phaseInProject?.currentPhase;
-        const phaseNum = phaseInProject?.phases.length || 0;
-        const estimateDate = phaseInProject?.phases[phaseNum -1].day;
-        // thông tin báo cáo
-        
-    } catch (error) {
-        
-    }
-} 
+export const projectStatisticById = async (req: Request, projectId: string) => {
+  const project = await Project.findById(projectId)
+    .populate({ path: 'pm', select: 'name alias emailContact' })
+    .populate({ path: 'customer', select: 'name alias emailContact' });
+
+  if (!project) throw new Error("Không tìm thấy dự án");
+
+  const startDate = dayjs(project.day);
+  const phaseInProject = await Phase.findOne({ projectId });
+  const phaseNum = phaseInProject?.phases.length || 0;
+  const estimateDate = phaseInProject?.phases[phaseNum - 1]?.day
+    ? dayjs(phaseInProject.phases[phaseNum - 1].day)
+    : undefined;
+
+  const allReports = await Report.find({ projectId }).select('createdAt sender').populate({
+    path: 'sender',
+    select: 'role',
+  });
+
+  const customerReports = allReports.filter(
+    (r) => (r.sender as any)?.role === 'guest'
+  );
+  const pmReports = allReports.filter(
+    (r) => (r.sender as any)?.role === 'pm' || (r.sender as any)?.role === 'admin'
+  );
+
+  const now = dayjs();
+  const daysInProgress = now.diff(startDate, 'day');
+  const endDate = estimateDate || now;
+  const weekCount = Math.ceil(endDate.diff(startDate, 'day') / 7);
+
+  const getWeekIndex = (date: Date) => {
+    return Math.floor(dayjs(date).diff(startDate, 'day') / 7);
+  };
+
+  const pmReportByWeek = Array(weekCount).fill(0);
+  const customerReportByWeek = Array(weekCount).fill(0);
+
+  pmReports.forEach((r) => {
+    const idx = getWeekIndex(r.day);
+    if (idx >= 0 && idx < weekCount) pmReportByWeek[idx]++;
+  });
+  customerReports.forEach((r) => {
+    const idx = getWeekIndex(r.day);
+    if (idx >= 0 && idx < weekCount) customerReportByWeek[idx]++;
+  });
+
+  return {
+    projectName : project.name,
+    startDate : startDate,
+    estimateDate : estimateDate,
+    pm : project.pm,
+    customer : project.customer,
+    daysInProgress,
+    pmReportCount: pmReports.length,
+    customerReportCount: customerReports.length,
+    pieChart : {
+        currentPhase : phaseInProject?.currentPhase,
+        phaseNum : phaseNum
+    },
+    chart: {
+      weekLabels: Array.from({ length: weekCount }, (_, i) => `Tuần ${i + 1}`),
+      pmReportByWeek,
+      customerReportByWeek,
+    },
+  };
+};
