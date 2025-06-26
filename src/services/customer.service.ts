@@ -4,6 +4,7 @@ import { genAlias } from '../utils/alias.util';
 import User from '../models/user.model';
 import { Request } from 'express';
 import {splitVietnameseName , compareVN} from '../utils/name.util';
+import Project from '../models/project.model';
 
 export const createCustomer = async (req: Request, customerData: ICustomer) => {
     try {
@@ -192,5 +193,21 @@ export const autoSearchCustomers = async(req: Request, searchTerm: string = "") 
         return customers;
     } catch (error: any) {
         throw new Error(req.t('serverError', { ns: 'customer', message: error.message }));
+    }
+}
+
+
+export const customerStatistic = async () => {
+    try {
+        const allCustomer = await Customer.find();
+        const totalCustomer = allCustomer.length;
+        const customerIds = allCustomer.filter((c) => (c._id))
+         const totalCustomerProject = await Project.distinct("customer").then(arr => arr.length);
+        console.log("total " , totalCustomerProject);
+        return {
+            totalCustomerProject
+        }
+    } catch (error : any) {
+        throw new Error(error.message)
     }
 }

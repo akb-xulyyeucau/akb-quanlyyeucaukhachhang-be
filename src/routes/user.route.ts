@@ -8,12 +8,14 @@ import {
     udateUserByIdController,
     getUserController,
     updateUserActiveController,
-    meController
+    meController,
+    userStatisticController
 } from '../controllers/user.controller';
 import { protect, authorize } from '../middlewares/auth.middleware';
 
 const router = express.Router();
 
+router.get('/statistic', protect , authorize('admin') , expressAsyncHandler(userStatisticController));
 router.get('/', protect, authorize('admin'), expressAsyncHandler(getAllUserController));
 router.get('/search', protect, authorize('admin'), expressAsyncHandler(getUserController));
 router.post('/', protect, authorize('admin'), expressAsyncHandler(createUserController));

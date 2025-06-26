@@ -11,7 +11,8 @@ import {
  getProjectByCustomerIdController,
  getProjectRequestByCustomerIdController,
  addDocumentToProjectController,
- endingProjectController
+ endingProjectController,
+ projectStatistcController
 } from '../controllers/project.controller';
 import { protect, authorize } from '../middlewares/auth.middleware';
 
@@ -23,6 +24,7 @@ router.use(authorize('admin', 'pm', 'guest'));
 router.get('/request', expressAsyncHandler(getProjectRequestController));
 router.get('/request/:cId', expressAsyncHandler(getProjectRequestByCustomerIdController));
 router.get('/customer/:cId', expressAsyncHandler(getProjectByCustomerIdController));
+router.get('/statistic/:projectId' , expressAsyncHandler(projectStatistcController));
 
 // Thao tác cập nhật
 router.patch('/add-document/:pId', expressAsyncHandler(addDocumentToProjectController));

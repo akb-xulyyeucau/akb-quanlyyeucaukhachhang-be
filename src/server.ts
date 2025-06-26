@@ -17,6 +17,7 @@ import documentRoute from './routes/document.route';
 import phaseRoute from './routes/phase.route';
 import reportRoute from './routes/report.route';
 import mailRoute from './routes/mail.route';
+import feedbackRoute from './routes/feedback.route';
 dotenv.config();
 
 const app = express();
@@ -64,8 +65,9 @@ app.use("/api/:lng/document", documentRoute);
 app.use("/api/:lng/phase", phaseRoute);
 app.use("/api/:lng/report", reportRoute);
 app.use("/api/:lng/mail", mailRoute);
+app.use("/api/:lng/feedback", feedbackRoute);
 
-
+ 
 connectDB();
 
 cronJob();

@@ -9,7 +9,8 @@ import {
     getProjectByCustomerId,
     getProjectRequestByCustomerId,
     addDocumentToProject,
-    endingProject
+    endingProject,
+    projectStatisticById
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
@@ -227,6 +228,23 @@ export const endingProjectController = async (req : Request , res : Response) =>
         })
     } catch (error : any) {
         res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const projectStatistcController = async (req : Request , res : Response) => {
+    try {
+        const {projectId} = req.params;
+        const statistic = await projectStatisticById(req , projectId);
+        res.status(200).json({
+            success : true,
+            message : req.t('statistc.success' , {ns : 'project'}),
+            data : statistic
+        })
+    } catch (error : any) {
+         res.status(400).json({
             success : false,
             message : error.message
         })
