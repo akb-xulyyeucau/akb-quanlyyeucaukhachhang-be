@@ -263,3 +263,12 @@ export const projectStatisticById = async (req: Request, projectId: string) => {
     },
   };
 };
+
+export const projectStatistic = async (req : Request) => {
+    try {
+        if(req.user?.role === 'guest') return;
+        const totalActiveProject =  await Project.countDocuments({isActive:true});
+    } catch (error) {
+        
+    }
+}
