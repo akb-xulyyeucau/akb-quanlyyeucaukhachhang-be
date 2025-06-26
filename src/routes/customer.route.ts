@@ -15,9 +15,8 @@ import {
 const router = express.Router();
 
 router.use(protect);
-
+router.get('/statistic', authorize('admin'), expressAsyncHandler(customerStatisticController));
 // Route tĩnh đặt trước
-router.post('/statistic', authorize('admin'), expressAsyncHandler(customerStatisticController));
 router.get('/auto-search', expressAsyncHandler(autoSearchCustomersController));
 router.get('/search', authorize('admin', 'pm'), expressAsyncHandler(getCustomerPagnitonController));
 router.get('/', authorize('admin', 'pm'), expressAsyncHandler(getAllCustomerController));
@@ -28,5 +27,7 @@ router.get('/:userId', authorize('admin', 'pm'), expressAsyncHandler(getCustomer
 router.put('/:id', authorize('admin', 'pm'), expressAsyncHandler(updateCustomerByIdController));
 router.delete('/:id', authorize('admin', 'pm'), expressAsyncHandler(deleteCustomerByIdController));
 router.delete('/user/:id', authorize('admin', 'pm'), expressAsyncHandler(deleteCustomerByUserIdController));
+
+
 
 export default router;

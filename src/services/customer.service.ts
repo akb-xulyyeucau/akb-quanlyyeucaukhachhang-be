@@ -196,18 +196,80 @@ export const autoSearchCustomers = async(req: Request, searchTerm: string = "") 
     }
 }
 
-
 export const customerStatistic = async () => {
     try {
-        const allCustomer = await Customer.find();
-        const totalCustomer = allCustomer.length;
-        const customerIds = allCustomer.filter((c) => (c._id))
-         const totalCustomerProject = await Project.distinct("customer").then(arr => arr.length);
-        console.log("total " , totalCustomerProject);
-        return {
-            totalCustomerProject
+        // Đếm số lượng khách hàng đã từng có trong bất kỳ dự án nào
+        const customerIdsInProject = await Project.distinct("customer");
+        const totalCustomerInProject = customerIdsInProject.length;
+        const totalProject = await Project.countDocuments({isActive : true});
+        // Nếu muốn trả về tổng số khách hàng trong hệ thống:
+        const totalCustomer = await Customer.countDocuments();
+        let percentProjectWithCustomer = 0;
+        if(totalCustomer !== 0){
+           percentProjectWithCustomer = Math.round(totalCustomerInProject/totalCustomer * 100);
         }
-    } catch (error : any) {
-        throw new Error(error.message)
+        //Khách hàng [] có n dự án , n dự án phải khác 0
+        let customersWithProjects = await Project.aggregate([
+            { $match: { isActive: true } },
+            {
+                $group: {
+                    _id: "$customer",
+                    projects: { $push: { _id: "$_id", name: "$name", alias: "$alias" , status : "$status"} },
+                    projectCount: { $sum: 1 }
+                }
+            },
+            {
+                $match: {
+                    _id: { $ne: null }, // Loại bỏ project không có customer
+                    projectCount: { $gt: 0 }
+                }
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "customerInfo"
+                }
+            },
+            {
+                $unwind: "$customerInfo"
+            },
+            {
+                $project: {
+                    _id: 0,
+                    customerId: "$customerInfo._id",
+                    customerName: "$customerInfo.name",
+                    customerAlias: "$customerInfo.alias",
+                    emailContact: "$customerInfo.emailContact",
+                    projectCount: 1,
+                    projects: 1
+                }
+            }
+        ]);
+       if (totalProject > 0) {
+            customersWithProjects = customersWithProjects.map(c => ({
+                ...c,
+                percentProject: Math.round((c.projectCount / totalProject) * 100)
+            }));
+        }
+
+        // Tìm projectCount lớn nhất
+        const maxProjectCount = customersWithProjects.reduce(
+            (max, c) => c.projectCount > max ? c.projectCount : max,
+            0
+        );
+
+        // Lọc ra các khách hàng có projectCount = maxProjectCount
+        const topCustomers = customersWithProjects.filter(c => c.projectCount === maxProjectCount);
+
+        return {
+            totalCustomerInProject,
+            totalCustomer,
+            percentProjectWithCustomer,
+            customersWithProjects : topCustomers // chỉ trả về khách hàng có nhiều dự án nhất
+        };
+    } catch (error: any) {
+        throw new Error(error.message);
     }
 }

@@ -147,7 +147,7 @@ export const userStatistic = async () => {
             percentActive = Math.round((totalActive.length / totalUsers) * 100);
         }
         if(totalActive.length !== 0){
-            percentPM = Math.round((totalActive.length / totalUsers) * 100);
+            percentPM = Math.round((totalPMActive.length / totalUsers) * 100);
             percentCustomer = 100 - percentPM;
         }
         return {

@@ -14,7 +14,7 @@ export const createFeedback = async (req : Request , feedbackData : IFeedBack) =
 
 export const getFeedbackInProject = async (req : Request , projectId : string) => {
     try {
-        const feedbacks = await Feedback.find({projectId}).populate('customerId');
+        const feedbacks = await Feedback.find({projectId}).populate('customerId').sort({createdAt : -1});
         if(!feedbacks) throw new Error(req.t('feedback.getAll.faild', {ns : 'feedback'}));
         return feedbacks;
     } catch (error : any) {
