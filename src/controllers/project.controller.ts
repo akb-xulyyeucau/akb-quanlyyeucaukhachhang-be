@@ -43,19 +43,73 @@ export const createProjectController = async (req : Request , res : Response) =>
     }
 };
 
-export const getAllProjectController = async (req : Request , res : Response) => {
+export const getAllProjectController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const allProjects = await getAllProject(req);
+        // Validate time filter if provided
+        if (req.query.timeFilter) {
+            try {
+                const timeFilter = JSON.parse(req.query.timeFilter as string);
+                if (!timeFilter.type || !timeFilter.year || !timeFilter.value) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Invalid time filter format. Required: type (month/quarter), year, and value'
+                    });
+                    return;
+                }
+                if (timeFilter.type !== 'month' && timeFilter.type !== 'quarter') {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Time filter type must be either "month" or "quarter"'
+                    });
+                    return;
+                }
+                if (timeFilter.type === 'month' && (timeFilter.value < 1 || timeFilter.value > 12)) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Month value must be between 1 and 12'
+                    });
+                    return;
+                }
+                if (timeFilter.type === 'quarter' && (timeFilter.value < 1 || timeFilter.value > 4)) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Quarter value must be between 1 and 4'
+                    });
+                    return;
+                }
+            } catch (error) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Invalid time filter JSON format'
+                });
+                return;
+            }
+        }
+
+        // Validate pagination parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        
+        if (page < 1 || limit < 1) {
+            res.status(400).json({
+                success: false,
+                message: 'Page and limit must be positive numbers'
+            });
+            return;
+        }
+
+        const result = await getAllProject(req);
         res.status(200).json({
-            success : true,
-            message  : req.t('getAll.success', { ns: 'project' }),
-            data : allProjects
+            success: true,
+            message: req.t('getAll.success', { ns: 'project' }),
+            data: result.projects,
+            pagination: result.pagination
         });
-    } catch (error : any) {
+    } catch (error: any) {
         res.status(400).json({
-            success : false,
-            message : error.message
-        })
+            success: false,
+            message: error.message
+        });
     }
 }
 
@@ -160,20 +214,75 @@ export const activeProjectController = async (req : Request , res : Response) =>
     }
 }
 
-export const getProjectByCustomerIdController = async (req : Request , res : Response) => {
+export const getProjectByCustomerIdController = async (req: Request, res: Response): Promise<void> => {
     try {
-        const {cId} = req.params;
-        const project = await getProjectByCustomerId(req , cId);
+        const { cId } = req.params;
+
+        // Validate time filter if provided
+        if (req.query.timeFilter) {
+            try {
+                const timeFilter = JSON.parse(req.query.timeFilter as string);
+                if (!timeFilter.type || !timeFilter.year || !timeFilter.value) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Invalid time filter format. Required: type (month/quarter), year, and value'
+                    });
+                    return;
+                }
+                if (timeFilter.type !== 'month' && timeFilter.type !== 'quarter') {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Time filter type must be either "month" or "quarter"'
+                    });
+                    return;
+                }
+                if (timeFilter.type === 'month' && (timeFilter.value < 1 || timeFilter.value > 12)) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Month value must be between 1 and 12'
+                    });
+                    return;
+                }
+                if (timeFilter.type === 'quarter' && (timeFilter.value < 1 || timeFilter.value > 4)) {
+                    res.status(400).json({
+                        success: false,
+                        message: 'Quarter value must be between 1 and 4'
+                    });
+                    return;
+                }
+            } catch (error) {
+                res.status(400).json({
+                    success: false,
+                    message: 'Invalid time filter JSON format'
+                });
+                return;
+            }
+        }
+
+        // Validate pagination parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        
+        if (page < 1 || limit < 1) {
+            res.status(400).json({
+                success: false,
+                message: 'Page and limit must be positive numbers'
+            });
+            return;
+        }
+
+        const result = await getProjectByCustomerId(req, cId);
         res.status(200).json({
-            success : true,
-            message : req.t('getByCustomerId.success', { ns: 'project' }),
-            data : project
-        })
-    } catch (error : any) {
+            success: true,
+            message: req.t('getByCustomerId.success', { ns: 'project' }),
+            data: result.projects,
+            pagination: result.pagination
+        });
+    } catch (error: any) {
         res.status(400).json({
-            success : false,
-            message : error.message
-        })
+            success: false,
+            message: error.message
+        });
     }
 }
 

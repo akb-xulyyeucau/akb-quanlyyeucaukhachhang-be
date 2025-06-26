@@ -8,21 +8,108 @@ import Customer from '../models/customer.model';
 import Phase from '../models/phase.model';
 import Report from '../models/report.model';
 import dayjs from 'dayjs';
+
+interface TimeFilter {
+    type: 'month' | 'quarter';
+    year: number;
+    value: number;
+}
+
+interface PaginationOptions {
+    page: number;
+    limit: number;
+}
+
+interface SearchFilter {
+    searchTerm?: string;
+    isDone?: boolean;
+    timeFilter?: TimeFilter;
+}
+
+const buildSearchQuery = (filter: SearchFilter) => {
+    const query: any = { isActive: true };
+    // Tìm kiếm theo tên dự án
+    if (filter.searchTerm) {
+        query.name = { $regex: filter.searchTerm, $options: 'i' };
+    }
+    // Filter theo trạng thái
+    if (filter.isDone !== undefined) {
+        query.status = filter.isDone ? "Đã hoàn thành" : "Đang thực hiện";
+    }
+    // Filter theo thời gianS
+    if (filter.timeFilter) {
+        const timeQuery = buildTimeFilter(filter.timeFilter);
+        Object.assign(query, timeQuery);
+    }
+    return query;
+}
+
+const buildTimeFilter = (timeFilter?: TimeFilter) => {
+    if (!timeFilter) return {};
+
+    const { type, year, value } = timeFilter;
+    let startDate, endDate;
+
+    if (type === 'month') {
+        startDate = dayjs().year(year).month(value - 1).startOf('month');
+        endDate = dayjs().year(year).month(value - 1).endOf('month');
+    } else { // quarter
+        const startMonth = (value - 1) * 3;
+        startDate = dayjs().year(year).month(startMonth).startOf('month');
+        endDate = dayjs().year(year).month(startMonth + 2).endOf('month');
+    }
+
+    return {
+        day: {
+            $gte: startDate.toDate(),
+            $lte: endDate.toDate()
+        }
+    };
+}
+
 export const getAllProject = async (req: Request) => {
-    const project = await Project.find({isActive : true})
-    .populate({
-        path: 'pm',
-        select: 'name emailContact'
-    })
-    .populate({
-        path: 'customer',
-        select: 'name emailContact'
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const searchTerm = req.query.searchTerm as string;
+    const isDone = req.query.isDone ? req.query.isDone === 'true' : undefined;
+    const timeFilter: TimeFilter | undefined = req.query.timeFilter ? JSON.parse(req.query.timeFilter as string) : undefined;
+
+    const query = buildSearchQuery({
+        searchTerm,
+        isDone,
+        timeFilter
     });
-    
-    if(!project) {
+
+    const totalProjects = await Project.countDocuments(query);
+    const totalPages = Math.ceil(totalProjects / limit);
+    const skip = (page - 1) * limit;
+
+    const projects = await Project.find(query)
+        .populate({
+            path: 'pm',
+            select: 'name emailContact'
+        })
+        .populate({
+            path: 'customer',
+            select: 'name emailContact'
+        })
+        .skip(skip)
+        .limit(limit)
+        .sort({ day: -1 });
+
+    if (!projects) {
         throw new Error(req.t('notFound', { ns: 'project' }));
     }
-    return project;
+
+    return {
+        projects,
+        pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems: totalProjects,
+            limit
+        }
+    };
 }
 
 export const getProjectRequest = async (req : Request , isActive : Boolean) => {
@@ -142,20 +229,54 @@ export const activeProject = async (req : Request , pId : string , data : {statu
     return project;
 }
 
-export const getProjectByCustomerId = async (req : Request , cId : string) => {
-    const project = await Project.find({customer : cId , isActive : true})
-    .populate({
-        path : 'pm',
-        select : 'name emailContact'
-    })
-    .populate({
-        path : 'customer',
-        select : 'name emailContact'
-    })
-    if(!project ) {
+export const getProjectByCustomerId = async (req: Request, cId: string) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const searchTerm = req.query.searchTerm as string;
+    const isDone = req.query.isDone ? req.query.isDone === 'true' : undefined;
+    const timeFilter: TimeFilter | undefined = req.query.timeFilter ? JSON.parse(req.query.timeFilter as string) : undefined;
+
+    const baseQuery = buildSearchQuery({
+        searchTerm,
+        isDone,
+        timeFilter
+    });
+
+    const query = {
+        ...baseQuery,
+        customer: cId
+    };
+
+    const totalProjects = await Project.countDocuments(query);
+    const totalPages = Math.ceil(totalProjects / limit);
+    const skip = (page - 1) * limit;
+
+    const projects = await Project.find(query)
+        .populate({
+            path: 'pm',
+            select: 'name emailContact'
+        })
+        .populate({
+            path: 'customer',
+            select: 'name emailContact'
+        })
+        .skip(skip)
+        .limit(limit)
+        .sort({ day: -1 });
+
+    if (!projects) {
         throw new Error(req.t('notFound', { ns: 'project' }));
     }
-    return project;
+
+    return {
+        projects,
+        pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems: totalProjects,
+            limit
+        }
+    };
 }
 
 export const getProjectRequestByCustomerId = async (req : Request , cId : string) => {
@@ -268,6 +389,14 @@ export const projectStatistic = async (req : Request) => {
     try {
         if(req.user?.role === 'guest') return;
         const totalActiveProject =  await Project.countDocuments({isActive:true});
+        const totalProject = await Project.countDocuments();
+        const totalInActiveProject = totalProject - totalActiveProject;
+        let percentActive = 0;
+        let percentInActive = 0;
+        if(totalProject > 0) {
+            percentActive = Math.round(totalActiveProject/totalProject * 100);
+            percentInActive = 100 - percentActive;
+        }
     } catch (error) {
         
     }
