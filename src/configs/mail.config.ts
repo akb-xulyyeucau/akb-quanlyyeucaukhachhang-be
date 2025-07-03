@@ -1,13 +1,14 @@
 import nodemailer from "nodemailer";
+import { IMailConfig } from "../interfaces/mail.interface";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // true nếu dùng port 465, false nếu 587
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
-export default transporter;
+export const createTransporter = (mailConfig: IMailConfig) => {
+  return nodemailer.createTransport({
+    host: mailConfig.host,
+    port: mailConfig.port,
+    secure: mailConfig.secure,
+    auth: {
+      user: mailConfig.user,
+      pass: mailConfig.pass,
+    },
+  });
+};

@@ -18,7 +18,7 @@ const router = express.Router();
 router.get('/statistic', protect , authorize('admin') , expressAsyncHandler(userStatisticController));
 router.get('/', protect, authorize('admin'), expressAsyncHandler(getAllUserController));
 router.get('/search', protect, authorize('admin'), expressAsyncHandler(getUserController));
-router.post('/', protect, authorize('admin'), expressAsyncHandler(createUserController));
+router.post('/', expressAsyncHandler(createUserController));
 router.get('/:id', protect, authorize('admin'), expressAsyncHandler(getUserByIdController));
 router.put('/:id', protect, authorize('admin'), expressAsyncHandler(udateUserByIdController));
 router.delete('/:id', protect, authorize('admin'), expressAsyncHandler(deleteUserByIdController));
