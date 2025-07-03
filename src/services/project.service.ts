@@ -385,9 +385,9 @@ export const projectStatisticById = async (req: Request, projectId: string) => {
   };
 };
 
-export const projectStatistic = async (req : Request) => {
+export const projectStatistic = async () => {
     try {
-        if(req.user?.role === 'guest') return;
+        // if(req.user?.role === 'guest') return;
         const totalActiveProject =  await Project.countDocuments({isActive:true});
         const totalProject = await Project.countDocuments();
         const totalInActiveProject = totalProject - totalActiveProject;
@@ -397,7 +397,42 @@ export const projectStatistic = async (req : Request) => {
             percentActive = Math.round(totalActiveProject/totalProject * 100);
             percentInActive = 100 - percentActive;
         }
-    } catch (error) {
-        
+        return {
+            totalProject,
+            totalActiveProject,
+            totalInActiveProject,
+            percentActive,
+            percentInActive
+        }
+    } catch (error : any) {
+        throw new Error(error.message);
+    }
+}
+
+export const projectStatisticByGuest = async (req : Request) => {
+    try {
+        const userId = req.user?._id;
+        const userRole = req.user?.role;
+        if(userRole !== 'guest') return;
+        const c = await Customer.findOne({userId : userId});
+        console.log("Custoemr" , c?._id);
+        const totalProject = await Project.countDocuments({customer : c?._id});
+        const totalActiveProject = await Project.countDocuments({customer : c?._id , isActive : true})
+        const totalInActiveProject = totalProject - totalActiveProject;       
+        let percentActive = 0;
+        let percentInActive = 0;
+        if(totalProject > 0) {
+            percentActive = Math.round(totalActiveProject/totalProject * 100);
+            percentInActive = 100 - percentActive;
+        }
+        return {
+            totalProject,
+            totalActiveProject,
+            totalInActiveProject,
+            percentActive,
+            percentInActive
+        }
+    } catch (error : any) {
+        throw new Error(error.message);
     }
 }

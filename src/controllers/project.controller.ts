@@ -10,11 +10,14 @@ import {
     getProjectRequestByCustomerId,
     addDocumentToProject,
     endingProject,
-    projectStatisticById
+    projectStatisticById,
+    projectStatistic,
+    projectStatisticByGuest
 } from '../services/project.service';
 
 import {Request , Response} from 'express';
 import {IProject} from '../interfaces/project.interface';
+import dayjs from 'dayjs';
 
 export const createProjectController = async (req : Request , res : Response) => {
     try {
@@ -197,6 +200,7 @@ export const activeProjectController = async (req : Request , res : Response) =>
     try {
         const {pId} = req.params;
         const data = {
+            day : Date.now(),
             status : "Đang thực hiện",
             isActive : true
         }
@@ -343,7 +347,7 @@ export const endingProjectController = async (req : Request , res : Response) =>
     }
 }
 
-export const projectStatistcController = async (req : Request , res : Response) => {
+export const projectStatistcByIdController = async (req : Request , res : Response) => {
     try {
         const {projectId} = req.params;
         const statistic = await projectStatisticById(req , projectId);
@@ -354,6 +358,33 @@ export const projectStatistcController = async (req : Request , res : Response) 
         })
     } catch (error : any) {
          res.status(400).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
+export const projectStatisticController = async (req : Request , res : Response) => {
+    try {
+        const userRole = req.user?.role;
+        if (userRole !== 'guest'){
+            const statistc = await projectStatistic();
+            res.status(200).json({
+                success : true,
+                message : 'Thống kê thành công !',
+                data: statistc
+            })
+        }
+        else {
+            const statistc = await projectStatisticByGuest(req);
+            res.status(200).json({
+                success : true,
+                message : 'Thống kê thành công !',
+                data: statistc
+            })
+        }
+    } catch (error : any) {
+        res.status(400).json({
             success : false,
             message : error.message
         })

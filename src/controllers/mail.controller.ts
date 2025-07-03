@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { sendMail , sendMailWithTemplate } from "../services/mail.service";
+import { createMailConfig, deleteMailConfig, getMailConfig, sendMail , sendMailWithTemplate, updateMailConfig } from "../services/mail.service";
+import { IMailConfig } from "../interfaces/mail.interface";
+import { ObjectId } from "mongoose";
 
 export const sendMailController = async (req: Request, res: Response) => {
   try {
     const { to, subject, text, html } = req.body;
-    await sendMail({ to, subject, text, html });
+    const userId = req.user?._id as string;
+    await sendMail({ to, subject, text, html, userId });
     res.status(200).json(
     { 
         success: true, 
@@ -18,7 +21,8 @@ export const sendMailController = async (req: Request, res: Response) => {
 export const sendMailTemplateController = async(req : Request , res : Response) =>{
     try {
         const {to , subject , templateName , data} = req.body;
-        await sendMailWithTemplate(to, subject , templateName , data);
+        const userId = req.user?._id as string;
+        await sendMailWithTemplate(to, subject, templateName, data, userId);
         res.status(200).json({
             success : true,
             message : "Email sent"
@@ -26,4 +30,67 @@ export const sendMailTemplateController = async(req : Request , res : Response) 
     } catch (error : any) {
         res.status(500).json({ success: false, message: error.message });
     }
+}
+
+export const createMailConfigController = async (req : Request , res : Response) => {
+  try {
+    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod} = req.body; 
+    const userId = req.user?._id as string | ObjectId;
+    
+    const mailConfig : IMailConfig = {
+      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId
+    }
+    const newMailConfig = await createMailConfig(mailConfig);
+    res.status(200).json({
+      success : true,
+      message : "Cấu hình thành công !",
+      data : newMailConfig
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+export const getMailConfigController = async (req : Request , res : Response) => {
+  try {
+    const mailConfig = await getMailConfig(req);
+    res.status(200).json({
+      success : true,
+      message : "Lấy mail config  thành công !",
+      data : mailConfig
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+export const updateMailConfigController = async (req : Request , res : Response) => {
+  try {
+    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod} = req.body;
+    const userId = req.user?._id as string | ObjectId;
+    const mailConfig : IMailConfig = {
+      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId
+    }
+    const updatedMailConfig = await updateMailConfig(req , mailConfig);
+    res.status(200).json({
+      success : true,
+      message : "Cập nhật cấu hình thành công !",
+      data : updatedMailConfig
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+export const deleteMailConfigController = async (req : Request , res : Response) => {
+  try {
+    const deletedMailConfig = await deleteMailConfig(req);
+    res.status(200).json({
+      success : true,
+      message : "Xóa cấu hình thành công !",
+      data : deletedMailConfig
+    })
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 }
