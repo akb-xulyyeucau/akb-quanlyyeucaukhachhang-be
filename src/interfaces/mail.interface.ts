@@ -12,3 +12,17 @@ export interface IMailConfig {
     createdAt : Date;
     createdBy : string | ObjectId;
 }
+
+export interface IMailQueue {
+    to : string;
+    subject : string;
+    templateName : string;
+    cc? : string[];
+    bcc? : string[];
+    isSend : boolean;
+    status : 'pending' | 'success' | 'failed';
+    errorMessage? : string;    
+    createdBy : string | ObjectId;
+    sendAt : Date;
+    retryCount : number
+}

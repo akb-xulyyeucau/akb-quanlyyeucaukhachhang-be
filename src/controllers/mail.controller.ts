@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createMailConfig, deleteMailConfig, getMailConfig, sendMail , sendMailWithTemplate, updateMailConfig } from "../services/mail.service";
+import { createMailConfig, deleteMailConfig, getMailConfig, sendMail , sendMailWithTemplate, updateMailConfig, addToMailQueue } from "../services/mail.service";
 import { IMailConfig } from "../interfaces/mail.interface";
 import { ObjectId } from "mongoose";
 
@@ -94,3 +94,40 @@ export const deleteMailConfigController = async (req : Request , res : Response)
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
+export const addToMailQueueController = async (req: Request, res: Response) => {
+    try {
+        const { 
+            to, 
+            subject, 
+            templateName, 
+            templateData,
+            cc,
+            bcc,
+            priority,
+            scheduledFor 
+        } = req.body;
+
+        const userId = req.user?._id as string;
+        
+        const mailQueue = await addToMailQueue(
+            to,
+            subject,
+            templateName,
+            templateData,
+            userId,
+            { cc, bcc, priority, scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Đã thêm mail vào hàng đợi",
+            data: mailQueue
+        });
+    } catch (error: any) {
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
