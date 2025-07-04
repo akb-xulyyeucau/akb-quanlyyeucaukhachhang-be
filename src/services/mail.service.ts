@@ -4,6 +4,7 @@ import handlebars from 'handlebars';
 import { Request } from "express";
 import MailConfig from "../models/mail.model";
 import { IMailConfig } from "../interfaces/mail.interface";
+import MailQueue from "../models/mail.queue.model";
 
 interface SendMailOptions {
   to: string;
@@ -103,3 +104,37 @@ export const deleteMailConfig = async (req : Request) => {
     throw new Error("Lỗi khi xóa cấu hình !");
   }
 }
+
+export const addToMailQueue = async (
+    to: string,
+    subject: string,
+    templateName: string,
+    templateData: any,
+    userId: string,
+    options?: {
+        cc?: string[],
+        bcc?: string[],
+        priority?: number,
+        scheduledFor?: Date
+    }
+) => {
+    try {
+        const mailQueue = await MailQueue.create({
+            to,
+            subject,
+            templateName,
+            templateData,
+            cc: options?.cc || [],
+            bcc: options?.bcc || [],
+            priority: options?.priority || 2, // 1: cao, 2: trung bình, 3: thấp
+            scheduledFor: options?.scheduledFor,
+            createdBy: userId,
+            status: 'pending',
+            isSend: false,
+            retryCount: 0
+        });
+        return mailQueue;
+    } catch (error: any) {
+        throw new Error(`Không thể thêm mail vào hàng đợi: ${error.message}`);
+    }
+};
