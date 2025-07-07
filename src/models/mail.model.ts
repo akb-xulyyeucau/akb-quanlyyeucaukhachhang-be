@@ -12,6 +12,7 @@ const mailConfigSchema = new mongoose.Schema<IMailConfig>({
     senderName : {type : String, required : true },
     createdAt : {type : Date, default : Date.now },
     createdBy : {type : Schema.Types.ObjectId, ref : 'User', required : true , unique : true },
+    isActive : {type : Boolean , default : false},
 })
 
 const MailConfig = model<IMailConfig>('MailConfig', mailConfigSchema);

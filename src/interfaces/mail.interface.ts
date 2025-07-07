@@ -11,6 +11,8 @@ export interface IMailConfig {
     senderName : string;
     createdAt : Date;
     createdBy : string | ObjectId;
+    isActive : boolean
+
 }
 
 export interface IMailQueue {
@@ -24,5 +26,5 @@ export interface IMailQueue {
     errorMessage? : string;    
     createdBy : string | ObjectId;
     sendAt : Date;
-    retryCount : number
+    retryCount : number,
 }

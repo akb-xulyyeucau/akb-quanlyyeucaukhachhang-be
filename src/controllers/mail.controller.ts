@@ -34,11 +34,11 @@ export const sendMailTemplateController = async(req : Request , res : Response) 
 
 export const createMailConfigController = async (req : Request , res : Response) => {
   try {
-    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod} = req.body; 
+    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod , isActive} = req.body; 
     const userId = req.user?._id as string | ObjectId;
     
     const mailConfig : IMailConfig = {
-      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId
+      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId , isActive
     }
     const newMailConfig = await createMailConfig(mailConfig);
     res.status(200).json({
@@ -66,10 +66,10 @@ export const getMailConfigController = async (req : Request , res : Response) =>
 
 export const updateMailConfigController = async (req : Request , res : Response) => {
   try {
-    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod} = req.body;
+    const {serviceName , host , port , user , pass , secure , senderName , encryptMethod , isActive} = req.body;
     const userId = req.user?._id as string | ObjectId;
     const mailConfig : IMailConfig = {
-      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId
+      serviceName , host , port , user , pass , secure , senderName , encryptMethod , createdAt : new Date() , createdBy : userId , isActive
     }
     const updatedMailConfig = await updateMailConfig(req , mailConfig);
     res.status(200).json({
