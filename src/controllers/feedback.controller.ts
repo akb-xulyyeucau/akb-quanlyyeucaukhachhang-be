@@ -6,26 +6,54 @@ import {
     updateFeedback,
     deleteFeedback
 } from '../services/feedback.service';
-import {Request , Response} from 'express';
+import { Request, Response } from 'express';
+import { queueMail, EmailTemplates } from '../utils/mail.util';
+import { IUserDocument } from '../interfaces/user.interface';
+import Project from '../models/project.model';
 
-export const createFeedbackController = async (req : Request , res : Response) => {
+export const createFeedbackController = async (req: Request, res: Response) => {
     try {
+        const user = req.user as IUserDocument;
+        const userId = (user._id as unknown as string).toString();
+        
         const {
-            projectId, customerId , rating, comment , suggest
-        } : IFeedBack = req.body;
-        const feeedbackData : IFeedBack = {
-             projectId, customerId,  rating , comment , suggest
+            projectId, customerId, rating, comment, suggest
+        }: IFeedBack = req.body;
+        
+        const feedbackData: IFeedBack = {
+            projectId, customerId, rating, comment, suggest
         }
-        const feedback = await createFeedback(req , feeedbackData );
+        const feedback = await createFeedback(req, feedbackData);
+
+        // Gửi mail thông báo khi có feedback mới
+        const project = await Project.findById(projectId)
+            .populate('pm') // Populate PM để lấy email
+            .populate('customer'); // Populate customer để lấy thông tin dự án
+
+        if (project) {
+            // Gửi mail cho PM
+            if ((project.pm as any).email) {
+                await queueMail(
+                    {
+                        to: (project.pm as any).email,
+                        ...EmailTemplates.FEEDBACK_RECEIVED(project.name, Number(rating), comment),
+                        priority: 2 // Ưu tiên trung bình cho thông báo feedback
+                    },
+                    userId,
+                    req
+                );
+            }
+        }
+
         res.status(201).json({
-            success : true,
-            message : req.t('feedback.create.success' , {ns : 'feedback'}),
-            data : feedback
+            success: true,
+            message: req.t('feedback.create.success', {ns: 'feedback'}),
+            data: feedback
         })
-    } catch (error : any) {
+    } catch (error: any) {
         res.status(400).json({
-            success : false,
-            message : error.message
+            success: false,
+            message: error.message
         })
     }
 }
