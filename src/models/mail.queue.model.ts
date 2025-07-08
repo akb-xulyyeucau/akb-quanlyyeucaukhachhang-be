@@ -12,7 +12,7 @@ const mailQueueSchema = new mongoose.Schema<IMailQueue>({
     errorMessage : {type : String , default : ''},
     createdBy : {type : mongoose.Schema.Types.ObjectId , ref : 'User' , required : true},
     sendAt : {type : Date , default : Date.now()},
-    retryCount : {type : Number , default : 0}
+    retryCount : {type : Number , default : 0},
 })
 
 const MailQueue = model<IMailQueue>('MailQueue' , mailQueueSchema);

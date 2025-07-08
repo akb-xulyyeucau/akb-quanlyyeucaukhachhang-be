@@ -18,6 +18,7 @@ import phaseRoute from './routes/phase.route';
 import reportRoute from './routes/report.route';
 import mailRoute from './routes/mail.route';
 import feedbackRoute from './routes/feedback.route';
+import homeRoute from './routes/home.route';
 dotenv.config();
 
 const app = express();
@@ -66,7 +67,7 @@ app.use("/api/:lng/phase", phaseRoute);
 app.use("/api/:lng/report", reportRoute);
 app.use("/api/:lng/mail", mailRoute);
 app.use("/api/:lng/feedback", feedbackRoute);
-
+app.use("/api/:lng/home", homeRoute);
  
 connectDB();
 
