@@ -159,7 +159,7 @@ export const adminStatistic = async (
         .populate<{ pm: { _id: Types.ObjectId; name: string } }>('pm', 'name')
         .lean()
         .select('name status day isActive customer pm')
-        .sort({ day: -1 })
+        // .sort({ day: -1 })
     ]);
 
     // Tính toán phần trăm thay đổi
@@ -377,7 +377,7 @@ export const customerStatistic = async (
         .populate<{ pm: { _id: Types.ObjectId; name: string } }>('pm', 'name')
         .lean()
         .select('name status day isActive customer pm')
-        .sort({ day: -1 })
+        // .sort({ day: -1 })
     ]);
 
     // Tính toán phần trăm thay đổi

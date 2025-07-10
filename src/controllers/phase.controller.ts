@@ -7,6 +7,10 @@ import {
     updatePhase,
 } from '../services/phase.service';
 import { Request, Response } from 'express';
+import { queueMail, EmailTemplates } from '../mails/mail';
+import { IUserDocument } from '../interfaces/user.interface';
+import Project from '../models/project.model';
+import Customer from '../models/customer.model';
 
 export const getPhaseController = async (req : Request , res : Response) => {
     try {
@@ -66,26 +70,43 @@ export const createPhaseController = async (req : Request , res : Response) => {
     }
 }
 
-export const updatePhaseController = async (req : Request , res : Response) => {
+export const updatePhaseController = async (req: Request, res: Response) => {
     try {
+        const user = req.user as IUserDocument;
+        const userId = (user._id as unknown as string).toString();
         const {phaseId} = req.params;
-        const {projectId , name , phases , currentPhase} = req.body;
-        const updateData : IPhase =  {
-            projectId : projectId,
-            name : name,
-            phases : phases,
+        const {projectId, name, phases, currentPhase} = req.body;
+        const updateData: IPhase = {
+            projectId,
+            name,
+            phases,
             currentPhase,
         }
-        const updatedPhase = await updatePhase(req , phaseId , updateData);
+        const updatedPhase = await updatePhase(req, phaseId, updateData);
+
+        // Gửi mail thông báo khi chuyển phase
+        const project = await Project.findById(projectId).populate('customer');
+        if (project && (project.customer as any).emailContact) {
+            await queueMail(
+                {
+                    to: (project.customer as any).emailContact,
+                    ...EmailTemplates.PHASE_CHANGED(project.name, currentPhase),
+                    priority: 2 // Ưu tiên trung bình cho thông báo chuyển phase
+                },
+                userId,
+                req
+            );
+        }
+
         res.status(200).json({
-            success : true,
-            message : req.t('updatePhase.success' , {ns : 'phase'}),
-            data : updatedPhase
+            success: true,
+            message: req.t('updatePhase.success', {ns: 'phase'}),
+            data: updatedPhase
         })
-    } catch (error : any) {
+    } catch (error: any) {
         res.status(400).json({
-            success : false,
-            message : error.message
+            success: false,
+            message: error.message
         })
     }
 }

@@ -1,9 +1,12 @@
 import { Request, Response } from 'express';
-import { createReport, getReportsByProject, getReportById , deleteReport, updateReport} from '../services/report.service';
+import { createReport, getReportsByProject, getReportById, deleteReport, updateReport } from '../services/report.service';
 import { uploadMultiple } from '../middlewares/upload.middleware';
 import { IFile } from '../interfaces/document.interface';
 import { IReport } from '../interfaces/report.interface';
 import { ObjectId } from 'mongoose';
+import { queueMail, EmailTemplates } from '../mails/mail';
+import { IUserDocument } from '../interfaces/user.interface';
+import Project from '../models/project.model';
 
 // Hàm xử lý tên file tiếng Việt
 const decodeVietnameseFilename = (filename: string): string => {
@@ -16,6 +19,9 @@ const decodeVietnameseFilename = (filename: string): string => {
 
 export const createReportController = async (req: Request, res: Response) => {
     try {
+        const user = req.user as IUserDocument;
+        const userId = (user._id as unknown as string).toString();
+
         // Handle file upload
         uploadMultiple(req, res, async (err) => {
             if (err) {
@@ -58,6 +64,21 @@ export const createReportController = async (req: Request, res: Response) => {
             };
 
             const report = await createReport(req, reportData);
+
+            // Gửi mail thông báo khi tạo báo cáo mới
+            const project = await Project.findById(projectId).populate('customer');
+            if (project && (project.customer as any).emailContact) {
+                await queueMail(
+                    {
+                        to: (project.customer as any).emailContact,
+                        ...EmailTemplates.REPORT_ADDED(project.name, mainContent),
+                        priority: 2 // Ưu tiên trung bình cho thông báo báo cáo mới
+                    },
+                    userId,
+                    req
+                );
+            }
+
             res.status(201).json({
                 success: true,
                 message : req.t('create.success', { ns: 'report' }),
@@ -117,6 +138,8 @@ export const getReportDetailController = async (req: Request, res: Response) => 
 
 export const updateReportController = async (req: Request, res: Response) => {
     try {
+        const user = req.user as IUserDocument;
+        const userId = (user._id as unknown as string).toString();
         const { reportId } = req.params;
         
         // Handle file upload
@@ -179,6 +202,21 @@ export const updateReportController = async (req: Request, res: Response) => {
             };
 
             const updatedReport = await updateReport(req, reportId, reportData);
+
+            // Gửi mail thông báo khi cập nhật báo cáo
+            const project = await Project.findById(projectId).populate('customer');
+            if (project && (project.customer as any).emailContact) {
+                await queueMail(
+                    {
+                        to: (project.customer as any).emailContact,
+                        ...EmailTemplates.REPORT_ADDED(project.name, mainContent),
+                        priority: 2 // Ưu tiên trung bình cho thông báo cập nhật báo cáo
+                    },
+                    userId,
+                    req
+                );
+            }
+
             res.status(200).json({
                 success: true,
                 message : req.t('update.success', { ns: 'report' }),
