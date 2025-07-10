@@ -1,10 +1,9 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
 import {corsOptions} from './configs/corsOptions.config';
 import {cronJob} from './configs/cronjob';
 import cookieParser from "cookie-parser";
-import connectDB from './configs/db.config';
+import {connectDB} from './configs/db.config';
 import i18next from './configs/i18n.config';
 import i18nextMiddleware from 'i18next-http-middleware';
 import userRoutes from "./routes/user.route";
@@ -19,7 +18,7 @@ import reportRoute from './routes/report.route';
 import mailRoute from './routes/mail.route';
 import feedbackRoute from './routes/feedback.route';
 import homeRoute from './routes/home.route';
-dotenv.config();
+import {envKey} from './configs/key.config';
 
 const app = express();
 
@@ -36,7 +35,7 @@ app.use(cors({
 
 // Static file serving with CORS enabled
 app.use("/uploads", (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', process.env.FE_URL || '*');
+  res.header('Access-Control-Allow-Origin', envKey.fe.url || '*');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
@@ -73,7 +72,7 @@ connectDB();
 
 cronJob();
 
-const PORT = process.env.PORT || 5051;
+const PORT = envKey.app.port;
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });
