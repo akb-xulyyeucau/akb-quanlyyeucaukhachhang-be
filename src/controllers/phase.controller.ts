@@ -7,7 +7,7 @@ import {
     updatePhase,
 } from '../services/phase.service';
 import { Request, Response } from 'express';
-import { queueMail, EmailTemplates } from '../utils/mail.util';
+import { queueMail, EmailTemplates } from '../mails/mail';
 import { IUserDocument } from '../interfaces/user.interface';
 import Project from '../models/project.model';
 import Customer from '../models/customer.model';

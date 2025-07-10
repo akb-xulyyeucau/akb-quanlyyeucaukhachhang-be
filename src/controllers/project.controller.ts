@@ -19,7 +19,7 @@ import {Request , Response} from 'express';
 import {IProject} from '../interfaces/project.interface'
 ;
 import dayjs from 'dayjs';
-import { queueMail, EmailTemplates } from '../utils/mail.util';
+import { queueMail, EmailTemplates } from '../mails/mail';
 import Customer from '../models/customer.model';
 import { ICustomer } from '../interfaces/customer.interface';
 import { IUserDocument } from '../interfaces/user.interface';

@@ -4,7 +4,7 @@ import { uploadMultiple } from '../middlewares/upload.middleware';
 import { IFile } from '../interfaces/document.interface';
 import { IReport } from '../interfaces/report.interface';
 import { ObjectId } from 'mongoose';
-import { queueMail, EmailTemplates } from '../utils/mail.util';
+import { queueMail, EmailTemplates } from '../mails/mail';
 import { IUserDocument } from '../interfaces/user.interface';
 import Project from '../models/project.model';
 
