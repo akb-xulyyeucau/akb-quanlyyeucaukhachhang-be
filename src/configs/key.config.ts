@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 
 dotenv.config();
-const isDev = process.env.NODE_ENV === 'development'
+const isDev  = process.env.NODE_ENV === 'development'
 export const envKey = {
     app : {
         port : process.env.PORT, 
@@ -22,8 +22,11 @@ export const envKey = {
         cron_project : process.env.CRON_JOB_PROJECT_EXPIRED_DAYS || '7',
         cron_complete : process.env.CRON_JOB_COMPLETED_PROJECT_EXPIRED_DAYS|| '14'
     },
+    cookie : {
+        
+    },
     fe : {
-        url : isDev ? process.env.FE_URL : process.env.FE_URL_PROD,
-        url_prod: process.env.FE_URL_PROD
+        url : isDev ? process.env.FE_URL : process.env.FE_URL_PORD
     }
+
 }
