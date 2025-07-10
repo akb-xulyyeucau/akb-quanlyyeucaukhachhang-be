@@ -2,16 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model';
 import { IUserDocument } from '../interfaces/user.interface';
-import mongoose from 'mongoose';
-import { IProject } from '../interfaces/project.interface';
-import Project from '../models/project.model';
-
+import { envKey } from '../configs/key.config';
 
 export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         let token;
+        
+        // Check Authorization header first
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
+        }
+        // If no token in header, check cookies
+        else if (req.cookies.accessToken) {
+            token = req.cookies.accessToken;
         }
 
         if (!token) {
@@ -22,19 +25,31 @@ export const protect = async (req: Request, res: Response, next: NextFunction): 
             return;
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET || 'default-access-secret') as { userId: string };
-        const user = await User.findById(decoded.userId);
+        try {
+            const decoded = jwt.verify(token, envKey.jwt.access_secret) as { userId: string };
+            const user = await User.findById(decoded.userId);
 
-        if (!user) {
-            res.status(401).json({
-                success: false,
-                message: req.t('errors.user_not_found', { ns: 'auth' })
-            });
-            return;
+            if (!user) {
+                res.status(401).json({
+                    success: false,
+                    message: req.t('errors.user_not_found', { ns: 'auth' })
+                });
+                return;
+            }
+
+            req.user = user;
+            next();
+        } catch (error) {
+            if (error instanceof jwt.TokenExpiredError) {
+                res.status(401).json({
+                    success: false,
+                    message: req.t('authorization.token_expired', { ns: 'auth' }),
+                    isExpired: true
+                });
+                return;
+            }
+            throw error;
         }
-
-        req.user = user;
-        next();
     } catch (error) {
         res.status(401).json({
             success: false,
@@ -56,7 +71,7 @@ export const verifyRefreshToken = async (req: Request, res: Response, next: Next
             return;
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'default-refresh-secret') as { userId: string };
+        const decoded = jwt.verify(refreshToken, envKey.jwt.refresh_secret) as { userId: string };
         const user = await User.findById(decoded.userId);
 
         if (!user) {

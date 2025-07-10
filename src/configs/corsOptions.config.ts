@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config()
-const FE_URL = process.env.FE_URL;
+import {envKey} from './key.config';
+const FE_URL = envKey.fe.url;
 export const corsOptions = {
   origin: FE_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE' , 'PATCH', 'OPTIONS'],

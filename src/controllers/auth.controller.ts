@@ -12,7 +12,8 @@ declare global {
         }
     }
 }
-
+import {envKey} from '../configs/key.config';
+const isDev = envKey.app.env === "development";
 export const loginUserController = async (req: Request, res: Response): Promise<void> => {
     try {
         const {email , password } = req.body;
@@ -29,12 +30,25 @@ export const loginUserController = async (req: Request, res: Response): Promise<
             return;
         }
         const {accessToken , refreshToken , user} = await loginUserService(email , password);
-        res.cookie('refreshToken' , refreshToken , {
+        
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        })
+            secure: !isDev,
+            sameSite: isDev ? 'strict' : 'none',
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        // Set access token in a non-HTTP-only cookie so frontend can access it
+        res.cookie('accessToken', accessToken, {
+            httpOnly: false, // Allow frontend to read this
+            secure: !isDev,
+            sameSite: isDev ? 'strict' : 'none',
+            path: '/',
+            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        });
+
         res.status(200).json({
             success: true,
             message: req.t('login_success', { ns: 'auth' }),
@@ -43,8 +57,7 @@ export const loginUserController = async (req: Request, res: Response): Promise<
                 email: user.email,
                 alias: user.alias,
                 role: user.role,
-                accessToken : accessToken,
-                refreshToken : refreshToken
+                accessToken: accessToken // Include token in response for immediate use
             }
         })
     } catch (error) {
@@ -95,14 +108,14 @@ export const logoutController = async (req: Request, res: Response): Promise<voi
         // Xóa refresh token từ cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: !isDev,
+            sameSite: isDev?'strict':'none',
             path: '/'
         });
         res.clearCookie('accessToken', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict'
+            secure: !isDev,
+            sameSite: isDev?'strict':'none'
         });
         res.status(200).json({
             success: true,

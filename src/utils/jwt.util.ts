@@ -1,24 +1,23 @@
 import jwt, { SignOptions, Secret } from 'jsonwebtoken';
-import dotenv from 'dotenv';
 import type { StringValue } from "ms";
-dotenv.config();
+import {envKey} from '../configs/key.config';
 
 export const genAccessToken = (userId: string): string => {
     const payload = { userId };
-    const expiresIn = (process.env.ACCESS_TOKEN_EXPIRE ?? '15m') as StringValue;
+    const expiresIn = (envKey.jwt.access_expire) as StringValue;
     const options: SignOptions = {
         expiresIn, 
     };
-    const secret: Secret = process.env.JWT_ACCESS_SECRET || 'default-access-secret';
+    const secret: Secret = envKey.jwt.access_secret;
     return jwt.sign(payload, secret, options);
 };
 
 export const genRefreshToken = (userId: string): string => {
     const payload = { userId };
-    const expiresIn = (process.env.REFRESH_TOKEN_EXPIRE ?? '30d') as StringValue;
+    const expiresIn = (envKey.jwt.refresh_expire) as StringValue;
     const options: SignOptions = {
         expiresIn, 
     };
-    const secret: Secret = process.env.JWT_REFRESH_SECRET || 'default-refresh-secret';
+    const secret: Secret = envKey.jwt.refresh_secret;
     return jwt.sign(payload, secret, options);
 }
